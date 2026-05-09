@@ -1,0 +1,48 @@
+---
+import { Icon } from 'astro-icon/components';
+
+export interface Props {
+  author: string;
+  sourceUrl: string;
+  sourceLabel: string;
+  quotedAt?: string;
+  platform?: 'note' | 'youtube' | 'twitter' | 'blog' | 'voicy' | 'other';
+}
+
+const { author, sourceUrl, sourceLabel, quotedAt, platform = 'other' } = Astro.props;
+
+const platformIcons: Record<string, string> = {
+  note: 'lucide:notebook',
+  youtube: 'lucide:youtube',
+  twitter: 'lucide:twitter',
+  blog: 'lucide:globe',
+  voicy: 'lucide:mic',
+  other: 'lucide:link',
+};
+
+const icon = platformIcons[platform];
+---
+
+<figure class="my-5 rounded-lg border-l-4 p-4" style="border-color: var(--color-accent); background-color: color-mix(in oklab, var(--color-accent) 5%, var(--color-bg));">
+  <blockquote class="m-0 italic" style="color: var(--color-text);">
+    <Icon name="lucide:quote" class="w-5 h-5 inline mr-2 opacity-60" style="color: var(--color-accent);" />
+    <slot />
+  </blockquote>
+  <figcaption class="mt-3 pt-3 border-t flex flex-wrap items-center gap-2 text-xs" style="border-color: var(--color-border); color: var(--color-muted);">
+    <span class="font-semibold" style="color: var(--color-text);">— {author}</span>
+    <span>|</span>
+    <a href={sourceUrl} target="_blank" rel="noopener nofollow" class="inline-flex items-center gap-1 hover:underline" style="color: var(--color-accent);">
+      <Icon name={icon} class="w-4 h-4" />
+      {sourceLabel}
+    </a>
+    {quotedAt && (
+      <>
+        <span>|</span>
+        <span class="inline-flex items-center gap-1">
+          <Icon name="lucide:calendar" class="w-3 h-3" />
+          引用日: {quotedAt}
+        </span>
+      </>
+    )}
+  </figcaption>
+</figure>

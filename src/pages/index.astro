@@ -1,0 +1,169 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { Icon } from 'astro-icon/components';
+import { getCollection } from 'astro:content';
+import { SITE, CATEGORIES, HUB_PAGES } from '../config';
+
+const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const featuredPosts = allPosts.filter((p) => p.data.featured).slice(0, 3);
+const recentPosts = allPosts.slice(0, 12);
+
+const categoryEntries = Object.entries(CATEGORIES);
+---
+
+<BaseLayout>
+  <section class="border-b" style="border-color: var(--color-border);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+      <div class="max-w-3xl">
+        <h1 class="text-3xl sm:text-5xl font-bold tracking-tight mb-4" style="color: var(--color-text);">
+          {SITE.name}
+        </h1>
+        <p class="text-lg sm:text-xl mb-6" style="color: var(--color-text-muted);">
+          副業の本当のところを、AI で集めて、たまに自分でも試して、リアルに伝える。
+          会社員のための<strong>副業情報キュレーション + 実体験ハイブリッド</strong>サイトです。
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <a
+            href="/category/getting-started/"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold transition-colors"
+            style="background-color: var(--color-primary); color: white;"
+          >
+            <Icon name="lucide:flag" class="w-4 h-4" />
+            副業の始め方を読む
+          </a>
+          <a
+            href="/category/ai-side-job/"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold border transition-colors hover:bg-[color:var(--color-surface)]"
+            style="border-color: var(--color-border); color: var(--color-text);"
+          >
+            <Icon name="lucide:sparkles" class="w-4 h-4" />
+            AI × 副業を見る
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {featuredPosts.length > 0 && (
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <h2 class="text-2xl font-bold mb-6" style="color: var(--color-text); border: none; padding: 0;">
+        📌 はじめての方におすすめ
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {featuredPosts.map((post) => (
+          <a
+            href={`/posts/${post.id}/`}
+            class="block rounded-lg border overflow-hidden transition-colors hover:bg-[color:var(--color-surface)]"
+            style="border-color: var(--color-border);"
+          >
+            {post.data.heroImage && (
+              <img
+                src={post.data.heroImage}
+                alt={post.data.heroImageAlt ?? post.data.title}
+                width="1200"
+                height="630"
+                loading="lazy"
+                decoding="async"
+                class="w-full h-auto aspect-[1200/630] object-cover"
+                style="background-color: var(--color-surface);"
+              />
+            )}
+            <div class="p-5">
+              <p class="text-xs mb-2" style="color: var(--color-text-muted);">
+                {CATEGORIES[post.data.category].name}
+              </p>
+              <h3 class="font-semibold mb-2" style="color: var(--color-text); padding: 0; margin: 0;">
+                {post.data.title}
+              </h3>
+              <p class="text-sm" style="color: var(--color-text-muted);">{post.data.description}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t" style="border-color: var(--color-border);">
+    <h2 class="text-2xl font-bold mb-6" style="color: var(--color-text); border: none; padding: 0;">
+      🗂️ カテゴリから探す
+    </h2>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      {categoryEntries.map(([slug, cat]) => (
+        <a
+          href={`/category/${slug}/`}
+          class="p-4 rounded-lg border transition-colors hover:bg-[color:var(--color-surface)]"
+          style="border-color: var(--color-border);"
+        >
+          <Icon name={cat.icon} class="w-6 h-6 mb-2" style="color: var(--color-primary);" />
+          <h3 class="font-semibold mb-1 text-sm" style="color: var(--color-text); padding: 0; margin: 0;">
+            {cat.name}
+          </h3>
+          <p class="text-xs leading-snug" style="color: var(--color-text-muted);">
+            {cat.description}
+          </p>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t" style="border-color: var(--color-border);">
+    <h2 class="text-2xl font-bold mb-6" style="color: var(--color-text); border: none; padding: 0;">
+      💡 用途別ハブ
+    </h2>
+    <div class="flex flex-wrap gap-3">
+      {HUB_PAGES.map((hub) => (
+        <a
+          href={hub.href}
+          class="px-4 py-2 rounded-full border text-sm transition-colors hover:bg-[color:var(--color-surface)]"
+          style="border-color: var(--color-border); color: var(--color-text);"
+        >
+          {hub.label}
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t" style="border-color: var(--color-border);">
+    <h2 class="text-2xl font-bold mb-6" style="color: var(--color-text); border: none; padding: 0;">
+      📰 最新記事
+    </h2>
+    {recentPosts.length === 0 ? (
+      <p style="color: var(--color-text-muted);">記事は近日公開予定です。</p>
+    ) : (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {recentPosts.map((post) => (
+          <a
+            href={`/posts/${post.id}/`}
+            class="block rounded-lg border overflow-hidden transition-colors hover:bg-[color:var(--color-surface)]"
+            style="border-color: var(--color-border);"
+          >
+            {post.data.heroImage && (
+              <img
+                src={post.data.heroImage}
+                alt={post.data.heroImageAlt ?? post.data.title}
+                width="1200"
+                height="630"
+                loading="lazy"
+                decoding="async"
+                class="w-full h-auto aspect-[1200/630] object-cover"
+                style="background-color: var(--color-surface);"
+              />
+            )}
+            <div class="p-5">
+              <p class="text-xs mb-2" style="color: var(--color-text-muted);">
+                {post.data.pubDate.toISOString().slice(0, 10)} ・ {CATEGORIES[post.data.category].name}
+              </p>
+              <h3 class="font-semibold mb-2" style="color: var(--color-text); padding: 0; margin: 0;">
+                {post.data.title}
+              </h3>
+              <p class="text-sm" style="color: var(--color-text-muted);">{post.data.description}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    )}
+  </section>
+</BaseLayout>

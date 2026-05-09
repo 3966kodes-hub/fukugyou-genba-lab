@@ -1,0 +1,77 @@
+---
+/**
+ * 比較表コンポーネント。A vs B vs C を縦軸（評価項目）× 横軸（候補）で表示。
+ * 値は "◎○△×" 記号 + 数値 を併記可能。
+ */
+import { Icon } from 'astro-icon/components';
+
+export interface ComparisonRow {
+  label: string;
+  values: (string | number)[];
+}
+
+export interface Props {
+  title?: string;
+  options: string[]; // ヘッダー行（候補名）
+  rows: ComparisonRow[];
+  recommendIndex?: number; // 推奨列のハイライト（0-indexed）
+  caption?: string;
+}
+
+const { title, options, rows, recommendIndex, caption } = Astro.props;
+---
+
+<figure class="my-8 rounded-lg border overflow-hidden" style="border-color: var(--color-border);">
+  {title && (
+    <header class="px-4 py-3 border-b flex items-center gap-2 font-semibold" style="border-color: var(--color-border); background-color: var(--color-surface); color: var(--color-text);">
+      <Icon name="lucide:scale" class="w-5 h-5" style="color: var(--color-primary);" />
+      {title}
+    </header>
+  )}
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr style="background-color: var(--color-surface);">
+          <th class="text-left px-3 py-2 sticky left-0" style="background-color: var(--color-surface);">評価項目</th>
+          {options.map((opt, i) => (
+            <th
+              class="text-center px-3 py-2"
+              style={recommendIndex === i ? 'background-color: color-mix(in oklab, var(--color-primary) 15%, var(--color-surface));' : ''}
+            >
+              <div class="flex flex-col items-center gap-1">
+                <span>{opt}</span>
+                {recommendIndex === i && (
+                  <span class="text-xs px-1.5 py-0.5 rounded" style="background-color: var(--color-primary); color: white;">推奨</span>
+                )}
+              </div>
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr class="border-t" style="border-color: var(--color-border);">
+            <td class="px-3 py-2 font-semibold sticky left-0" style="color: var(--color-text); background-color: var(--color-bg);">{r.label}</td>
+            {r.values.map((v, i) => (
+              <td
+                class="text-center px-3 py-2 tabular-nums"
+                style={recommendIndex === i
+                  ? 'color: var(--color-text); background-color: color-mix(in oklab, var(--color-primary) 6%, var(--color-bg));'
+                  : 'color: var(--color-text);'}
+              >
+                {v}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  {caption && (
+    <figcaption class="px-4 py-2 text-xs border-t" style="border-color: var(--color-border); color: var(--color-text-muted); background-color: var(--color-surface);">
+      {caption}
+    </figcaption>
+  )}
+</figure>

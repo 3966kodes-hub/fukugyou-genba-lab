@@ -1,0 +1,31 @@
+---
+import { Icon } from 'astro-icon/components';
+
+export interface Props {
+  type?: 'info' | 'warning' | 'tip' | 'danger';
+  title?: string;
+}
+
+const { type = 'info', title } = Astro.props;
+
+const colors = {
+  info: { border: 'var(--color-accent)', bg: 'color-mix(in oklab, var(--color-accent) 8%, var(--color-bg))', icon: 'lucide:info' },
+  warning: { border: 'var(--color-warning)', bg: 'color-mix(in oklab, var(--color-warning) 8%, var(--color-bg))', icon: 'lucide:alert-triangle' },
+  tip: { border: 'var(--color-success)', bg: 'color-mix(in oklab, var(--color-success) 8%, var(--color-bg))', icon: 'lucide:lightbulb' },
+  danger: { border: 'var(--color-danger)', bg: 'color-mix(in oklab, var(--color-danger) 8%, var(--color-bg))', icon: 'lucide:alert-octagon' },
+};
+
+const c = colors[type];
+---
+
+<aside class="my-5 rounded-lg border-l-4 p-4" style={`border-color: ${c.border}; background-color: ${c.bg};`}>
+  <div class="flex items-start gap-3">
+    <Icon name={c.icon} class="w-5 h-5 mt-0.5 flex-shrink-0" style={`color: ${c.border};`} />
+    <div class="flex-1 min-w-0">
+      {title && <p class="font-semibold mb-1" style="color: var(--color-text);">{title}</p>}
+      <div class="text-sm" style="color: var(--color-text);">
+        <slot />
+      </div>
+    </div>
+  </div>
+</aside>

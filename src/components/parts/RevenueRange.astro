@@ -1,0 +1,23 @@
+---
+import { REVENUE_RANGES, type RevenueRangeKey } from '../../config';
+
+export interface Props {
+  range: RevenueRangeKey;
+  inline?: boolean;
+}
+
+const { range, inline = false } = Astro.props;
+const r = REVENUE_RANGES[range];
+
+const cls = inline
+  ? 'inline-block px-2 py-0.5 rounded text-xs font-semibold'
+  : 'inline-block px-3 py-1 rounded-md text-sm font-bold';
+---
+
+<span
+  class={cls}
+  style={`background-color: color-mix(in oklab, var(--color-${r.color}) 18%, var(--color-bg)); color: var(--color-${r.color}); border: 1px solid color-mix(in oklab, var(--color-${r.color}) 40%, var(--color-bg));`}
+  title={`月収レンジ: ${r.label}`}
+>
+  💰 {r.label}
+</span>

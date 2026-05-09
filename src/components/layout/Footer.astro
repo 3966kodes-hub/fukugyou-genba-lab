@@ -1,0 +1,50 @@
+---
+import { SITE, FOOTER_LINKS, NAVIGATION } from '../../config';
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t mt-16" style="border-color: var(--color-border); background-color: var(--color-surface);">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div>
+        <h2 class="font-bold text-lg mb-2" style="color: var(--color-text);">{SITE.name}</h2>
+        <p class="text-sm" style="color: var(--color-text-muted);">{SITE.description}</p>
+      </div>
+
+      <nav aria-label="カテゴリ">
+        <h3 class="font-semibold mb-3" style="color: var(--color-text);">カテゴリ</h3>
+        <ul class="space-y-2">
+          {NAVIGATION.map((item) => (
+            <li>
+              <a href={item.href} class="text-sm hover:underline" style="color: var(--color-text-muted);">
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <nav aria-label="サイト情報">
+        <h3 class="font-semibold mb-3" style="color: var(--color-text);">サイト情報</h3>
+        <ul class="space-y-2">
+          {FOOTER_LINKS.map((item) => (
+            <li>
+              <a href={item.href} class="text-sm hover:underline" style="color: var(--color-text-muted);">
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+
+    <div class="mt-10 pt-6 border-t flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3" style="border-color: var(--color-border);">
+      <p class="text-xs" style="color: var(--color-text-muted);">
+        © {year} {SITE.name}. All rights reserved.
+      </p>
+      <p class="text-xs" style="color: var(--color-text-muted);">
+        ※本サイトはアフィリエイト広告（Amazon アソシエイト等）を含みます
+      </p>
+    </div>
+  </div>
+</footer>

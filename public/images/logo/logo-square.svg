@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="url(#grad)"/>
+  <text x="128" y="118" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" font-size="80" font-weight="900" text-anchor="middle" fill="#ffffff">副業</text>
+  <text x="128" y="180" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" font-size="42" font-weight="700" text-anchor="middle" fill="#ffffff">現場ラボ</text>
+  <text x="128" y="218" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" font-size="14" font-weight="500" text-anchor="middle" fill="#ffffff" opacity="0.85" letter-spacing="2">GENBA LAB</text>
+</svg>

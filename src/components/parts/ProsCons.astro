@@ -1,0 +1,43 @@
+---
+import { Icon } from 'astro-icon/components';
+
+export interface Props {
+  title?: string;
+  pros: string[];
+  cons: string[];
+}
+
+const { title, pros, cons } = Astro.props;
+---
+
+<aside class="my-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div class="rounded-lg border p-4" style="border-color: var(--color-success); background-color: color-mix(in oklab, var(--color-success) 6%, var(--color-bg));">
+    <h4 class="font-semibold mb-2 flex items-center gap-2" style="color: var(--color-success); margin: 0; padding: 0;">
+      <Icon name="lucide:circle-check" class="w-5 h-5" />
+      メリット
+    </h4>
+    <ul class="space-y-1.5 mt-2">
+      {pros.map((p) => (
+        <li class="flex items-start gap-2 text-sm" style="color: var(--color-text);">
+          <Icon name="lucide:plus" class="w-4 h-4 mt-0.5 flex-shrink-0" style="color: var(--color-success);" />
+          <span>{p}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  <div class="rounded-lg border p-4" style="border-color: var(--color-warning); background-color: color-mix(in oklab, var(--color-warning) 6%, var(--color-bg));">
+    <h4 class="font-semibold mb-2 flex items-center gap-2" style="color: var(--color-warning); margin: 0; padding: 0;">
+      <Icon name="lucide:alert-triangle" class="w-5 h-5" />
+      デメリット
+    </h4>
+    <ul class="space-y-1.5 mt-2">
+      {cons.map((c) => (
+        <li class="flex items-start gap-2 text-sm" style="color: var(--color-text);">
+          <Icon name="lucide:minus" class="w-4 h-4 mt-0.5 flex-shrink-0" style="color: var(--color-warning);" />
+          <span>{c}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</aside>

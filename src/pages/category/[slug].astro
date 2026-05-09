@@ -1,0 +1,74 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { Icon } from 'astro-icon/components';
+import { getCollection } from 'astro:content';
+import { CATEGORIES, type CategorySlug } from '../../config';
+
+export async function getStaticPaths() {
+  return Object.keys(CATEGORIES).map((slug) => ({
+    params: { slug },
+  }));
+}
+
+const { slug } = Astro.params as { slug: CategorySlug };
+const category = CATEGORIES[slug];
+
+const posts = (await getCollection('posts', ({ data }) => !data.draft && data.category === slug)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+---
+
+<BaseLayout title={category.name} description={category.description}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <nav aria-label="パンくず" class="mb-6 text-sm" style="color: var(--color-text-muted);">
+      <a href="/" class="hover:underline">ホーム</a>
+      <span class="mx-2">/</span>
+      <span>カテゴリ：{category.name}</span>
+    </nav>
+
+    <header class="mb-10 flex items-start gap-4">
+      <Icon name={category.icon} class="w-10 h-10" style="color: var(--color-primary);" />
+      <div>
+        <h1 class="mb-2" style="color: var(--color-text);">{category.name}</h1>
+        <p class="text-base" style="color: var(--color-text-muted);">{category.description}</p>
+        <p class="text-sm mt-2" style="color: var(--color-text-muted);">公開記事 {posts.length} 本</p>
+      </div>
+    </header>
+
+    {posts.length === 0 ? (
+      <p style="color: var(--color-text-muted);">このカテゴリの記事は近日公開予定です。</p>
+    ) : (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {posts.map((post) => (
+          <a
+            href={`/posts/${post.id}/`}
+            class="block rounded-lg border overflow-hidden transition-colors hover:bg-[color:var(--color-surface)]"
+            style="border-color: var(--color-border);"
+          >
+            {post.data.heroImage && (
+              <img
+                src={post.data.heroImage}
+                alt={post.data.heroImageAlt ?? post.data.title}
+                width="1200"
+                height="630"
+                loading="lazy"
+                decoding="async"
+                class="w-full h-auto aspect-[1200/630] object-cover"
+                style="background-color: var(--color-surface);"
+              />
+            )}
+            <div class="p-5">
+              <p class="text-xs mb-2" style="color: var(--color-text-muted);">
+                {post.data.pubDate.toISOString().slice(0, 10)}
+              </p>
+              <h3 class="font-semibold mb-2" style="color: var(--color-text); padding: 0; margin: 0;">
+                {post.data.title}
+              </h3>
+              <p class="text-sm" style="color: var(--color-text-muted);">{post.data.description}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    )}
+  </div>
+</BaseLayout>

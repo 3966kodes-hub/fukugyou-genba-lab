@@ -1,0 +1,71 @@
+---
+import { Icon } from 'astro-icon/components';
+
+export interface Props {
+  monthlyRevenue: number; // 円
+  monthlyHours: number;   // 時間
+  initialCost?: number;   // 円（任意）
+  paybackMonths?: number; // 任意・初期投資回収月数
+  label?: string;
+}
+
+const { monthlyRevenue, monthlyHours, initialCost, paybackMonths, label = '副業 ROI' } = Astro.props;
+
+const hourlyRate = monthlyHours > 0 ? Math.round(monthlyRevenue / monthlyHours) : 0;
+const annualRevenue = monthlyRevenue * 12;
+
+// 時給ランク判定（コンサル視点・最低賃金 1,000 円基準）
+const hourlyRank =
+  hourlyRate >= 3000 ? { label: '優秀', color: 'success' }
+  : hourlyRate >= 1500 ? { label: '健全', color: 'accent' }
+  : hourlyRate >= 800 ? { label: '損益分岐', color: 'warning' }
+  : { label: '要見直し', color: 'danger' };
+
+const fmt = (n: number) => '¥' + n.toLocaleString('ja-JP');
+---
+
+<aside class="my-6 rounded-xl border-2 p-5" style="border-color: var(--color-accent); background-color: color-mix(in oklab, var(--color-accent) 6%, var(--color-bg));">
+  <header class="flex items-center gap-2 mb-4">
+    <Icon name="lucide:calculator" class="w-5 h-5" style="color: var(--color-accent);" />
+    <h4 class="m-0 font-bold text-base" style="color: var(--color-accent);">{label}</h4>
+  </header>
+
+  <dl class="grid grid-cols-2 sm:grid-cols-3 gap-3 m-0">
+    <div class="rounded-md border p-3" style="border-color: var(--color-border); background-color: var(--color-card);">
+      <dt class="text-xs mb-1" style="color: var(--color-muted);">月収</dt>
+      <dd class="m-0 font-bold text-lg" style="color: var(--color-text);">{fmt(monthlyRevenue)}</dd>
+    </div>
+    <div class="rounded-md border p-3" style="border-color: var(--color-border); background-color: var(--color-card);">
+      <dt class="text-xs mb-1" style="color: var(--color-muted);">月作業時間</dt>
+      <dd class="m-0 font-bold text-lg" style="color: var(--color-text);">{monthlyHours}h</dd>
+    </div>
+    <div class="rounded-md border p-3" style={`border-color: var(--color-${hourlyRank.color}); background-color: color-mix(in oklab, var(--color-${hourlyRank.color}) 8%, var(--color-bg));`}>
+      <dt class="text-xs mb-1" style="color: var(--color-muted);">時給換算</dt>
+      <dd class="m-0">
+        <span class="font-bold text-lg" style={`color: var(--color-${hourlyRank.color});`}>{fmt(hourlyRate)}/h</span>
+        <span class="block text-xs mt-0.5" style={`color: var(--color-${hourlyRank.color});`}>{hourlyRank.label}</span>
+      </dd>
+    </div>
+    <div class="rounded-md border p-3" style="border-color: var(--color-border); background-color: var(--color-card);">
+      <dt class="text-xs mb-1" style="color: var(--color-muted);">年収換算</dt>
+      <dd class="m-0 font-bold text-base" style="color: var(--color-text);">{fmt(annualRevenue)}</dd>
+    </div>
+    {initialCost !== undefined && (
+      <div class="rounded-md border p-3" style="border-color: var(--color-border); background-color: var(--color-card);">
+        <dt class="text-xs mb-1" style="color: var(--color-muted);">初期投資</dt>
+        <dd class="m-0 font-bold text-base" style="color: var(--color-text);">{fmt(initialCost)}</dd>
+      </div>
+    )}
+    {paybackMonths !== undefined && (
+      <div class="rounded-md border p-3" style="border-color: var(--color-border); background-color: var(--color-card);">
+        <dt class="text-xs mb-1" style="color: var(--color-muted);">回収期間</dt>
+        <dd class="m-0 font-bold text-base" style="color: var(--color-text);">{paybackMonths}ヶ月</dd>
+      </div>
+    )}
+  </dl>
+
+  <p class="text-xs mt-3 mb-0" style="color: var(--color-muted);">
+    <Icon name="lucide:info" class="w-3 h-3 inline mr-1" />
+    時給 ¥800 未満 = 要見直し（最低賃金以下）／¥1,500 以上 = 副業として健全／¥3,000 以上 = 優秀
+  </p>
+</aside>

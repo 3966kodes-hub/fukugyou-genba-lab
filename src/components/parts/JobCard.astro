@@ -1,0 +1,97 @@
+---
+import { Icon } from 'astro-icon/components';
+import { REVENUE_RANGES, DIFFICULTIES, type RevenueRangeKey, type DifficultyKey } from '../../config';
+
+export interface Props {
+  name: string;
+  description: string;
+  revenueRange: RevenueRangeKey;
+  difficulty: DifficultyKey;
+  initialCost: string;
+  weeklyHours: string;
+  skills: string[];
+  href?: string;
+  icon?: string;
+}
+
+const {
+  name,
+  description,
+  revenueRange,
+  difficulty,
+  initialCost,
+  weeklyHours,
+  skills,
+  href,
+  icon = 'lucide:briefcase',
+} = Astro.props;
+
+const revenue = REVENUE_RANGES[revenueRange];
+const diff = DIFFICULTIES[difficulty];
+---
+
+<article class="my-5 rounded-xl border-2 p-5 transition-shadow hover:shadow-md" style="border-color: var(--color-border); background-color: var(--color-card);">
+  <header class="flex items-start gap-3 mb-3">
+    <span class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style="background-color: color-mix(in oklab, var(--color-accent) 12%, var(--color-bg));">
+      <Icon name={icon} class="w-6 h-6" style="color: var(--color-accent);" />
+    </span>
+    <div class="flex-1 min-w-0">
+      {href ? (
+        <h3 class="text-lg font-bold m-0">
+          <a href={href} class="hover:underline" style="color: var(--color-text);">{name}</a>
+        </h3>
+      ) : (
+        <h3 class="text-lg font-bold m-0" style="color: var(--color-text);">{name}</h3>
+      )}
+      <p class="text-sm mt-1 mb-0" style="color: var(--color-muted);">{description}</p>
+    </div>
+  </header>
+
+  <dl class="grid grid-cols-2 gap-x-4 gap-y-2 mt-4 text-sm">
+    <div>
+      <dt class="font-semibold mb-1 flex items-center gap-1" style="color: var(--color-muted);">
+        <Icon name="lucide:wallet" class="w-4 h-4" /> 想定月収
+      </dt>
+      <dd class="m-0">
+        <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold" style={`background-color: color-mix(in oklab, var(--color-${revenue.color}) 18%, var(--color-bg)); color: var(--color-${revenue.color});`}>
+          {revenue.label}
+        </span>
+      </dd>
+    </div>
+    <div>
+      <dt class="font-semibold mb-1 flex items-center gap-1" style="color: var(--color-muted);">
+        <Icon name="lucide:gauge" class="w-4 h-4" /> 難易度
+      </dt>
+      <dd class="m-0">
+        <span class="text-xs font-semibold" style={`color: var(--color-${diff.color});`}>
+          {'★'.repeat(diff.stars)}{'☆'.repeat(4 - diff.stars)} {diff.label}
+        </span>
+      </dd>
+    </div>
+    <div>
+      <dt class="font-semibold mb-1 flex items-center gap-1" style="color: var(--color-muted);">
+        <Icon name="lucide:coins" class="w-4 h-4" /> 初期投資
+      </dt>
+      <dd class="m-0 text-sm" style="color: var(--color-text);">{initialCost}</dd>
+    </div>
+    <div>
+      <dt class="font-semibold mb-1 flex items-center gap-1" style="color: var(--color-muted);">
+        <Icon name="lucide:clock" class="w-4 h-4" /> 週作業時間
+      </dt>
+      <dd class="m-0 text-sm" style="color: var(--color-text);">{weeklyHours}</dd>
+    </div>
+  </dl>
+
+  {skills.length > 0 && (
+    <footer class="mt-4 pt-3 border-t" style="border-color: var(--color-border);">
+      <p class="text-xs mb-2 font-semibold flex items-center gap-1" style="color: var(--color-muted);">
+        <Icon name="lucide:tags" class="w-4 h-4" /> 必要スキル
+      </p>
+      <ul class="flex flex-wrap gap-1.5 m-0 p-0 list-none">
+        {skills.map((s) => (
+          <li class="text-xs px-2 py-0.5 rounded" style="background-color: color-mix(in oklab, var(--color-text) 8%, var(--color-bg)); color: var(--color-text);">{s}</li>
+        ))}
+      </ul>
+    </footer>
+  )}
+</article>

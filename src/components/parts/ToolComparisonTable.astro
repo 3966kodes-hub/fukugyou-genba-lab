@@ -1,0 +1,68 @@
+---
+import { Icon } from 'astro-icon/components';
+
+export interface ToolRow {
+  name: string;
+  url?: string;
+  monthlyFee?: string;
+  initialCost?: string;
+  features: string[];
+  recommendedFor?: string;
+  rating?: number; // 1-5
+}
+
+export interface Props {
+  caption?: string;
+  tools: ToolRow[];
+  showRating?: boolean;
+}
+
+const { caption, tools, showRating = false } = Astro.props;
+---
+
+<figure class="my-6 overflow-x-auto">
+  {caption && (
+    <figcaption class="text-sm font-semibold mb-2 flex items-center gap-2" style="color: var(--color-text);">
+      <Icon name="lucide:layout-list" class="w-4 h-4" style="color: var(--color-accent);" />
+      {caption}
+    </figcaption>
+  )}
+  <table class="w-full border-collapse text-sm" style="background-color: var(--color-card);">
+    <thead>
+      <tr style="background-color: color-mix(in oklab, var(--color-accent) 10%, var(--color-bg));">
+        <th class="text-left p-3 border" style="border-color: var(--color-border); color: var(--color-text);">サービス</th>
+        <th class="text-left p-3 border" style="border-color: var(--color-border); color: var(--color-text);">月額</th>
+        <th class="text-left p-3 border" style="border-color: var(--color-border); color: var(--color-text);">初期費用</th>
+        <th class="text-left p-3 border" style="border-color: var(--color-border); color: var(--color-text);">主な特徴</th>
+        <th class="text-left p-3 border" style="border-color: var(--color-border); color: var(--color-text);">向いている人</th>
+        {showRating && <th class="text-left p-3 border" style="border-color: var(--color-border); color: var(--color-text);">評価</th>}
+      </tr>
+    </thead>
+    <tbody>
+      {tools.map((t) => (
+        <tr>
+          <td class="p-3 border align-top" style="border-color: var(--color-border);">
+            {t.url ? (
+              <a href={t.url} target="_blank" rel="noopener nofollow sponsored" class="font-semibold hover:underline" style="color: var(--color-accent);">{t.name}</a>
+            ) : (
+              <span class="font-semibold" style="color: var(--color-text);">{t.name}</span>
+            )}
+          </td>
+          <td class="p-3 border align-top text-sm" style="border-color: var(--color-border); color: var(--color-text);">{t.monthlyFee ?? '—'}</td>
+          <td class="p-3 border align-top text-sm" style="border-color: var(--color-border); color: var(--color-text);">{t.initialCost ?? '—'}</td>
+          <td class="p-3 border align-top" style="border-color: var(--color-border);">
+            <ul class="m-0 pl-4 list-disc" style="color: var(--color-text);">
+              {t.features.map((f) => <li class="text-xs">{f}</li>)}
+            </ul>
+          </td>
+          <td class="p-3 border align-top text-sm" style="border-color: var(--color-border); color: var(--color-muted);">{t.recommendedFor ?? '—'}</td>
+          {showRating && (
+            <td class="p-3 border align-top text-sm" style="border-color: var(--color-border); color: var(--color-warning);">
+              {t.rating ? '★'.repeat(t.rating) + '☆'.repeat(5 - t.rating) : '—'}
+            </td>
+          )}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</figure>

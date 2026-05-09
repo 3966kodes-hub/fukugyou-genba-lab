@@ -1,0 +1,103 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TableOfContents from '../../components/parts/TableOfContents.astro';
+import { Icon } from 'astro-icon/components';
+import { getCollection, render } from 'astro:content';
+import { CATEGORIES } from '../../config';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+const category = CATEGORIES[post.data.category];
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  ogType="article"
+  ogImage={post.data.heroImage}
+  pubDate={post.data.pubDate}
+  updatedDate={post.data.updatedDate}
+>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 lg:grid lg:grid-cols-[minmax(0,1fr)_220px] lg:gap-10">
+    <article class="max-w-3xl w-full mx-auto lg:mx-0 min-w-0">
+    <nav aria-label="パンくず" class="mb-6 text-sm" style="color: var(--color-text-muted);">
+      <a href="/" class="hover:underline">ホーム</a>
+      <span class="mx-2">/</span>
+      <a href={`/category/${post.data.category}/`} class="hover:underline">{category.name}</a>
+      <span class="mx-2">/</span>
+      <span>{post.data.title}</span>
+    </nav>
+
+    <header class="mb-8">
+      <div class="flex items-center gap-2 text-sm mb-3" style="color: var(--color-text-muted);">
+        <Icon name={category.icon} class="w-4 h-4" />
+        <a href={`/category/${post.data.category}/`} class="hover:underline">{category.name}</a>
+        <span>・</span>
+        <time datetime={post.data.pubDate.toISOString()}>
+          {post.data.pubDate.toISOString().slice(0, 10)}
+        </time>
+        {post.data.updatedDate && (
+          <span>（更新：{post.data.updatedDate.toISOString().slice(0, 10)}）</span>
+        )}
+      </div>
+      <h1 style="color: var(--color-text);">{post.data.title}</h1>
+      <p class="text-lg mt-3" style="color: var(--color-text-muted);">{post.data.description}</p>
+
+      {post.data.tags.length > 0 && (
+        <div class="flex flex-wrap gap-2 mt-4">
+          {post.data.tags.map((tag) => (
+            <a
+              href={`/tags/${encodeURIComponent(tag)}/`}
+              class="text-xs px-2 py-1 rounded border hover:bg-[color:var(--color-surface)]"
+              style="border-color: var(--color-border); color: var(--color-text-muted);"
+            >
+              #{tag}
+            </a>
+          ))}
+        </div>
+      )}
+
+      {post.data.heroImage && (
+        <figure class="mt-6 rounded-lg overflow-hidden border" style="border-color: var(--color-border);">
+          <img
+            src={post.data.heroImage}
+            alt={post.data.heroImageAlt ?? post.data.title}
+            width="1200"
+            height="630"
+            class="w-full h-auto"
+          />
+        </figure>
+      )}
+    </header>
+
+    <div class="prose-styles">
+      <Content />
+    </div>
+
+    {post.data.sources.length > 0 && (
+      <section class="mt-10 pt-6 border-t" style="border-color: var(--color-border);">
+        <h2 style="color: var(--color-text);">出典・参考情報</h2>
+        <ul class="space-y-1">
+          {post.data.sources.map((s) => (
+            <li>
+              <a href={s.url} target="_blank" rel="noopener noreferrer">{s.label}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+    </article>
+
+    <aside class="hidden lg:block">
+      <TableOfContents headings={headings} />
+    </aside>
+  </div>
+</BaseLayout>

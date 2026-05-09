@@ -1,0 +1,90 @@
+---
+import { Icon } from 'astro-icon/components';
+import { SITE, NAVIGATION } from '../../config';
+---
+
+<header class="sticky top-0 z-40 backdrop-blur-md border-b" style="background-color: color-mix(in oklab, var(--color-bg) 85%, transparent); border-color: var(--color-border);">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <div class="flex items-center gap-3">
+        <a href="/" class="flex items-center font-bold text-lg" style="color: var(--color-text);" aria-label={SITE.name}>
+          <img src="/images/logo/logo-horizontal.svg" alt={SITE.name} width="200" height="40" class="h-10 w-auto" />
+        </a>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-1" aria-label="メインメニュー">
+        {NAVIGATION.map((item) => (
+          <a
+            href={item.href}
+            class="px-3 py-1.5 text-sm rounded-md hover:bg-[color:var(--color-surface)] transition-colors"
+            style="color: var(--color-text);"
+          >
+            {item.label}
+          </a>
+        ))}
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <a
+          href="/search/"
+          class="p-2 rounded-md hover:bg-[color:var(--color-surface)] transition-colors"
+          aria-label="検索"
+        >
+          <Icon name="lucide:search" class="w-5 h-5" />
+        </a>
+        <button
+          id="theme-toggle"
+          class="p-2 rounded-md hover:bg-[color:var(--color-surface)] transition-colors"
+          aria-label="テーマ切替"
+        >
+          <Icon name="lucide:sun" class="w-5 h-5 dark:hidden" />
+          <Icon name="lucide:moon" class="w-5 h-5 hidden dark:block" />
+        </button>
+        <button
+          id="menu-toggle"
+          class="md:hidden p-2 rounded-md hover:bg-[color:var(--color-surface)] transition-colors"
+          aria-label="メニュー"
+        >
+          <Icon name="lucide:menu" class="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+
+    <nav id="mobile-menu" class="hidden md:hidden pb-4" aria-label="モバイルメニュー">
+      {NAVIGATION.map((item) => (
+        <a
+          href={item.href}
+          class="block px-3 py-2 text-sm rounded-md hover:bg-[color:var(--color-surface)] transition-colors"
+          style="color: var(--color-text);"
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+  </div>
+</header>
+
+<script is:inline>
+  const themeToggle = document.getElementById('theme-toggle');
+  const root = document.documentElement;
+
+  const stored = localStorage.getItem('theme');
+  if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    root.setAttribute('data-theme', 'dark');
+  } else if (stored === 'light') {
+    root.setAttribute('data-theme', 'light');
+  }
+
+  themeToggle?.addEventListener('click', () => {
+    const current = root.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  });
+
+  const menuToggle = document.getElementById('menu-toggle');
+  const mobileMenu = document.getElementById('mobile-menu');
+  menuToggle?.addEventListener('click', () => {
+    mobileMenu?.classList.toggle('hidden');
+  });
+</script>
