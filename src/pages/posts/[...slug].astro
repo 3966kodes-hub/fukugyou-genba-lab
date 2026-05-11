@@ -1,9 +1,9 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import TableOfContents from '../../components/parts/TableOfContents.astro';
-import { Icon } from 'astro-icon/components';
+/**
+ * 副業現場ラボ — Article page (Lab Notebook redesign)
+ */
 import { getCollection, render } from 'astro:content';
-import { CATEGORIES } from '../../config';
+import LabLayout from '../../layouts/LabLayout.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft);
@@ -15,89 +15,325 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content, headings } = await render(post);
-const category = CATEGORIES[post.data.category];
+
+type CatId = 'ai' | 'start' | 'blog' | 'video' | 'code' | 'invest' | 'real';
+type CatDef = {
+  id: CatId; slug: string; name: string; label: string; c: string; cBg: string;
+};
+const CATS: CatDef[] = [
+  { id: 'ai',     slug: 'ai-side-job',      name: 'AI × 副業',         label: 'AI', c: '#0F4F44', cBg: '#DCEFB4' },
+  { id: 'start',  slug: 'getting-started',  name: '始め方',            label: 'ST', c: '#B47A1F', cBg: '#F8E7C2' },
+  { id: 'blog',   slug: 'blog-writing',     name: 'ブログ・ライティング', label: 'WR', c: '#A93B43', cBg: '#F6D4D4' },
+  { id: 'video',  slug: 'video-audio',      name: '動画・音声',         label: 'AV', c: '#5840BF', cBg: '#DDD3F4' },
+  { id: 'code',   slug: 'programming',      name: 'プログラミング',      label: 'CD', c: '#1F58BF', cBg: '#CFDDF7' },
+  { id: 'invest', slug: 'investment',       name: '投資・資産運用',      label: '¥¥', c: '#1F8A5B', cBg: '#C8E6D2' },
+  { id: 'real',   slug: 'real-experience',  name: '私もやってみた',      label: 'EX', c: '#11161C', cBg: '#DCD7C5' },
+];
+const SLUG_TO_CAT: Record<string, CatDef> = Object.fromEntries(CATS.map((c) => [c.slug, c]));
+const cat = SLUG_TO_CAT[post.data.category] ?? CATS[0];
+
+const postShortId = 'P-' + (post.data.pubDate.getTime().toString(36).slice(-3).toUpperCase());
+
+const charCount = post.body?.replace(/\s/g, '').length ?? 0;
+const readMin = Math.max(2, Math.round(charCount / 600));
+
+const isReal = post.data.isRealExperience || post.data.category === 'real-experience';
+
+const tocItems = headings.filter((h) => h.depth === 2 || h.depth === 3);
+
+const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const related = allPosts
+  .filter((p) => p.id !== post.id && p.data.category === post.data.category)
+  .slice(0, 3);
+if (related.length < 3) {
+  const filler = allPosts.filter((p) => p.id !== post.id && !related.includes(p)).slice(0, 3 - related.length);
+  related.push(...filler);
+}
+
+const sameCat = allPosts.filter((p) => p.data.category === post.data.category);
+const idxInCat = sameCat.findIndex((p) => p.id === post.id);
+const prevPost = idxInCat >= 0 ? sameCat[idxInCat + 1] : undefined;
+const nextPost = idxInCat > 0 ? sameCat[idxInCat - 1] : undefined;
+
+const fmtDate = (d: Date) => d.toISOString().slice(0, 10);
+const idOf = (p: typeof allPosts[number]) =>
+  'P-' + (p.data.pubDate.getTime().toString(36).slice(-3).toUpperCase());
+const sourceOf = (p: typeof allPosts[number]) =>
+  p.data.isRealExperience || p.data.category === 'real-experience' ? 'real' : 'ai';
 ---
 
-<BaseLayout
+<LabLayout
   title={post.data.title}
   description={post.data.description}
   ogType="article"
   ogImage={post.data.heroImage}
   pubDate={post.data.pubDate}
   updatedDate={post.data.updatedDate}
+  activeNav={post.data.category}
+  bodyClass="is-article"
 >
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 lg:grid lg:grid-cols-[minmax(0,1fr)_220px] lg:gap-10">
-    <article class="max-w-3xl w-full mx-auto lg:mx-0 min-w-0">
-    <nav aria-label="パンくず" class="mb-6 text-sm" style="color: var(--color-text-muted);">
-      <a href="/" class="hover:underline">ホーム</a>
-      <span class="mx-2">/</span>
-      <a href={`/category/${post.data.category}/`} class="hover:underline">{category.name}</a>
-      <span class="mx-2">/</span>
-      <span>{post.data.title}</span>
-    </nav>
+  <div slot="before-topbar" class="reading-progress" aria-hidden="true">
+    <i data-reading-bar></i>
+  </div>
 
-    <header class="mb-8">
-      <div class="flex items-center gap-2 text-sm mb-3" style="color: var(--color-text-muted);">
-        <Icon name={category.icon} class="w-4 h-4" />
-        <a href={`/category/${post.data.category}/`} class="hover:underline">{category.name}</a>
-        <span>・</span>
-        <time datetime={post.data.pubDate.toISOString()}>
-          {post.data.pubDate.toISOString().slice(0, 10)}
-        </time>
-        {post.data.updatedDate && (
-          <span>（更新：{post.data.updatedDate.toISOString().slice(0, 10)}）</span>
-        )}
-      </div>
-      <h1 style="color: var(--color-text);">{post.data.title}</h1>
-      <p class="text-lg mt-3" style="color: var(--color-text-muted);">{post.data.description}</p>
+  <!-- ── Article hero ── -->
+  <section class="wrap art-hero">
+    <div class="breadcrumb mono">
+      <a href="/">HOME</a>
+      <span class="sep">/</span>
+      <a href={`/category/${cat.slug}/`}>{cat.name}</a>
+      <span class="sep">/</span>
+      <span class="here">{post.data.title}</span>
+    </div>
+    <div class="art-tags">
+      <span class="art-pill cat-pill" style={`background:${cat.c}`}><span class="d"></span>{cat.name}</span>
+      <span class="art-pill id-pill">{postShortId}</span>
+      {isReal
+        ? <span class="art-pill real-pill">◆ 実体験ベース</span>
+        : <span class="art-pill ai-pill">◇ AIまとめ</span>
+      }
+    </div>
+    <h1>{post.data.title}</h1>
+    <p class="lede">{post.data.description}</p>
+    <div class="art-meta">
+      <span class="author">
+        <span class="av">FL</span>
+        <span>サイト主 <span class="v">/ 現役会社員</span></span>
+      </span>
+      <span>公開 <span class="v">{fmtDate(post.data.pubDate)}</span></span>
+      {post.data.updatedDate && <span>更新 <span class="v">{fmtDate(post.data.updatedDate)}</span></span>}
+      <span>読了 <span class="v">{readMin} min</span></span>
+      <span>EXP <span class="v">{postShortId}</span></span>
+    </div>
+  </section>
 
-      {post.data.tags.length > 0 && (
-        <div class="flex flex-wrap gap-2 mt-4">
-          {post.data.tags.map((tag) => (
-            <a
-              href={`/tags/${encodeURIComponent(tag)}/`}
-              class="text-xs px-2 py-1 rounded border hover:bg-[color:var(--color-surface)]"
-              style="border-color: var(--color-border); color: var(--color-text-muted);"
-            >
-              #{tag}
+  <!-- ── Body 2-col ── -->
+  <div class="wrap art-body">
+    <article class="art-main">
+      <Content />
+
+      {post.data.sources.length > 0 && (
+        <section class="sources">
+          <h2>出典・参考情報</h2>
+          <ul>
+            {post.data.sources.map((s) => (
+              <li>
+                <a href={s.url} target="_blank" rel="noopener noreferrer">{s.label}</a>
+                {s.author && <span class="src-meta"> — {s.author}</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <aside class="author-card">
+        <div class="av">FL</div>
+        <div class="info">
+          <h4>サイト主 — 副業現場ラボ</h4>
+          <div class="role mono">CONSULTANT / 5+ SIDE-JOBS RUNNING</div>
+          <p>
+            現役会社員（コンサル）。2024年から複数副業を並走運用中。
+            AI を使ったコンテンツ制作・Kindle 出版・配当株運用など、自分でやってみた数値を中心に発信しています。
+          </p>
+          <div class="stats">
+            <span>RUNNING <b>5本</b></span>
+            <span>SINCE <b>2024-08</b></span>
+            <span>MONTHLY <b>¥38–72k</b></span>
+            <span>KINDLE <b>1冊</b></span>
+          </div>
+        </div>
+      </aside>
+
+      {(prevPost || nextPost) && (
+        <div class="next-prev">
+          {prevPost ? (
+            <a class="np" href={`/posts/${prevPost.id}/`}>
+              <span class="lbl">前の記事 / {idOf(prevPost)}</span>
+              <span class="ti">{prevPost.data.title}</span>
             </a>
-          ))}
+          ) : <span></span>}
+          {nextPost ? (
+            <a class="np right" href={`/posts/${nextPost.id}/`}>
+              <span class="lbl">次の記事 / {idOf(nextPost)}</span>
+              <span class="ti">{nextPost.data.title}</span>
+            </a>
+          ) : <span></span>}
         </div>
       )}
-
-      {post.data.heroImage && (
-        <figure class="mt-6 rounded-lg overflow-hidden border" style="border-color: var(--color-border);">
-          <img
-            src={post.data.heroImage}
-            alt={post.data.heroImageAlt ?? post.data.title}
-            width="1200"
-            height="630"
-            class="w-full h-auto"
-          />
-        </figure>
-      )}
-    </header>
-
-    <div class="prose-styles">
-      <Content />
-    </div>
-
-    {post.data.sources.length > 0 && (
-      <section class="mt-10 pt-6 border-t" style="border-color: var(--color-border);">
-        <h2 style="color: var(--color-text);">出典・参考情報</h2>
-        <ul class="space-y-1">
-          {post.data.sources.map((s) => (
-            <li>
-              <a href={s.url} target="_blank" rel="noopener noreferrer">{s.label}</a>
-            </li>
-          ))}
-        </ul>
-      </section>
-    )}
     </article>
 
-    <aside class="hidden lg:block">
-      <TableOfContents headings={headings} />
+    <aside class="art-side">
+      <div class="stick">
+        {tocItems.length > 0 && (
+          <nav class="toc" aria-label="目次">
+            <div class="lbl">目次 / contents</div>
+            <ol>
+              {tocItems.map((h) => (
+                <li class={h.depth === 3 ? 'is-h3' : ''}>
+                  <a href={`#${h.slug}`} data-toc-link data-target={h.slug}>{h.text}</a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        )}
+        <div class="share">
+          <button data-share-copy aria-label="URL をコピー">
+            <svg viewBox="0 0 24 24" class="icn" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/></svg>
+            Copy
+          </button>
+          <button data-share-x aria-label="X でシェア">
+            <svg viewBox="0 0 24 24" class="icn" aria-hidden="true"><path d="M9 15l6-6M10 6l1.5-1.5a4 4 0 015.5 5.5L15.5 11.5M14 18l-1.5 1.5a4 4 0 01-5.5-5.5L8.5 12.5"/></svg>
+            Share
+          </button>
+          <button data-share-save aria-label="保存">
+            <svg viewBox="0 0 24 24" class="icn" aria-hidden="true"><path d="M6 4h11a2 2 0 012 2v14H8a2 2 0 01-2-2V4z"/><path d="M6 18a2 2 0 012-2h11"/></svg>
+            Save
+          </button>
+        </div>
+      </div>
     </aside>
   </div>
-</BaseLayout>
+
+  <!-- ── Related ── -->
+  {related.length > 0 && (
+    <section class="wrap section">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow"><span class="sig"></span>RELATED / 関連の実験ログ</div>
+          <h2><span class="num mono">→</span>あわせて読みたい</h2>
+        </div>
+      </div>
+      <div class="related-grid">
+        {related.map((p) => {
+          const rc = SLUG_TO_CAT[p.data.category] ?? CATS[0];
+          const src = sourceOf(p);
+          return (
+            <a class="post" href={`/posts/${p.id}/`} style={`--c-bg:${rc.cBg};--c-fg:${rc.c}`}>
+              <div class="post-slug">
+                <div class="icon">{rc.label}</div>
+                <div class="id">{idOf(p)}</div>
+              </div>
+              <div class="post-body">
+                <div class="post-meta">
+                  <span class="cat-pill">{rc.name}</span>
+                  <span>·</span>
+                  <span>{fmtDate(p.data.pubDate)}</span>
+                  <span style="flex:1"></span>
+                  <span class={'ai-mark' + (src === 'real' ? ' is-real' : '')}>
+                    {src === 'real' ? '◆ 実体験' : '◇ AIまとめ'}
+                  </span>
+                </div>
+                <h4>{p.data.title}</h4>
+                <p class="desc">{p.data.description}</p>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  )}
+
+  <script slot="after-footer" is:inline>
+    // Reading progress
+    (function () {
+      const bar = document.querySelector('[data-reading-bar]');
+      if (!bar) return;
+      const onScroll = () => {
+        const h = document.documentElement;
+        const max = h.scrollHeight - h.clientHeight;
+        const p = max > 0 ? Math.min(1, h.scrollTop / max) : 0;
+        bar.style.width = (p * 100) + '%';
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+
+    // TOC scrollspy
+    (function () {
+      const links = document.querySelectorAll('a[data-toc-link]');
+      if (!links.length) return;
+      const linkMap = new Map();
+      links.forEach((l) => linkMap.set(l.dataset.target, l));
+      const heads = Array.from(linkMap.keys())
+        .map((id) => document.getElementById(id))
+        .filter(Boolean);
+      const setActive = (id) => {
+        links.forEach((l) => l.classList.remove('is-active'));
+        const link = linkMap.get(id);
+        if (link) link.classList.add('is-active');
+      };
+      const io = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((e) => e.isIntersecting)
+            .sort((a, b) => a.target.getBoundingClientRect().top - b.target.getBoundingClientRect().top);
+          if (visible.length > 0) setActive(visible[0].target.id);
+        },
+        { rootMargin: '-80px 0px -70% 0px', threshold: 0 },
+      );
+      heads.forEach((el) => io.observe(el));
+    })();
+
+    // Highlighter draw-on-scroll
+    (function () {
+      document.body.classList.add('is-drawing');
+      const els = document.querySelectorAll('.art-main p strong');
+      if (!('IntersectionObserver' in window)) {
+        els.forEach((el) => el.classList.add('is-drawn'));
+        return;
+      }
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-drawn');
+              io.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.7, rootMargin: '0px 0px -8% 0px' },
+      );
+      els.forEach((el) => io.observe(el));
+    })();
+
+    // Share buttons
+    (function () {
+      const url = location.href;
+      const title = document.title;
+      const copy = document.querySelector('[data-share-copy]');
+      const x = document.querySelector('[data-share-x]');
+      const save = document.querySelector('[data-share-save]');
+
+      copy?.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(url);
+          copy.classList.add('is-copied');
+          const original = copy.textContent;
+          copy.textContent = 'Copied!';
+          setTimeout(() => {
+            copy.classList.remove('is-copied');
+            copy.textContent = original;
+          }, 1500);
+        } catch (e) {}
+      });
+      x?.addEventListener('click', () => {
+        const u = 'https://x.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url);
+        window.open(u, '_blank', 'noopener');
+      });
+      save?.addEventListener('click', () => {
+        try {
+          const key = 'fgl-saved';
+          const saved = JSON.parse(localStorage.getItem(key) || '[]');
+          if (!saved.includes(url)) {
+            saved.push(url);
+            localStorage.setItem(key, JSON.stringify(saved));
+          }
+          save.classList.add('is-copied');
+          setTimeout(() => save.classList.remove('is-copied'), 1500);
+        } catch (e) {}
+      });
+    })();
+  </script>
+</LabLayout>

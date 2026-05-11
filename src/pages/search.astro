@@ -1,27 +1,53 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { Icon } from 'astro-icon/components';
+/**
+ * 副業現場ラボ — Search page (Lab Notebook redesign)
+ */
+import LabLayout from '../layouts/LabLayout.astro';
 ---
 
-<BaseLayout title="サイト内検索" description="記事タイトル・本文をキーワードで横断検索">
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-10">
-    <h1 class="flex items-center gap-2" style="color: var(--color-text);">
-      <Icon name="lucide:search" class="w-8 h-8" />
-      サイト内検索
-    </h1>
-    <p class="mb-6" style="color: var(--color-text-muted);">
-      記事タイトル・本文をキーワード横断検索できます。
-    </p>
-    <div id="search" class="pagefind-ui"></div>
-  </div>
+<LabLayout
+  title="サイト内検索"
+  description="記事タイトル・本文をキーワードで横断検索"
+  activeNav="search"
+  bodyClass="is-static"
+>
+  <link slot="head" rel="stylesheet" href="/pagefind/pagefind-ui.css" />
 
-  <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
-  <script is:inline src="/pagefind/pagefind-ui.js"></script>
-  <script is:inline define:vars={{ }}>
+  <section class="wrap">
+    <nav class="breadcrumb mono" aria-label="パンくず">
+      <a href="/">HOME</a>
+      <span class="sep">/</span>
+      <span class="here">サイト内検索</span>
+    </nav>
+
+    <header class="list-hero">
+      <div class="lh-row">
+        <div class="cat-icon-lg" style="background:var(--ink);color:var(--signal)">
+          <svg viewBox="0 0 24 24" style="width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"/>
+            <path d="M20 20l-3.5-3.5"/>
+          </svg>
+        </div>
+        <div>
+          <div class="eyebrow"><span class="sig"></span>SEARCH / 全文検索</div>
+          <h1>サイト内検索</h1>
+          <p class="lede">記事タイトル・本文をキーワードで横断検索できます（Pagefind）。</p>
+        </div>
+      </div>
+    </header>
+
+    <div id="search" class="pagefind-ui"></div>
+  </section>
+
+  <script slot="after-footer" is:inline src="/pagefind/pagefind-ui.js"></script>
+  <script slot="after-footer" is:inline>
     window.addEventListener('DOMContentLoaded', () => {
       if (typeof PagefindUI === 'undefined') {
-        document.getElementById('search').innerHTML =
-          '<p style="color: var(--color-text-muted);">検索機能はサイト本番ビルド後に有効になります（ローカルの dev サーバーでは動作しません）。</p>';
+        const el = document.getElementById('search');
+        if (el) {
+          el.innerHTML =
+            '<p style="color: var(--ink-3); font-family: var(--font-mono); font-size: 12.5px; padding: 24px; text-align: center;">検索機能はサイト本番ビルド後に有効になります（ローカルの dev サーバーでは動作しません）。</p>';
+        }
         return;
       }
       new PagefindUI({
@@ -43,4 +69,4 @@ import { Icon } from 'astro-icon/components';
       });
     });
   </script>
-</BaseLayout>
+</LabLayout>

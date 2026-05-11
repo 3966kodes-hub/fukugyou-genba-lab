@@ -1,25 +1,47 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+/**
+ * 副業現場ラボ — Disclaimer (Lab Notebook redesign)
+ */
+import LabLayout from '../layouts/LabLayout.astro';
 import { SITE } from '../config';
 ---
 
-<BaseLayout title="免責事項" description={`${SITE.name} の免責事項・PR 表記`}>
-  <article class="max-w-3xl mx-auto px-4 sm:px-6 py-10">
-    <h1 style="color: var(--color-text);">免責事項</h1>
+<LabLayout
+  title="免責事項"
+  description={`${SITE.name} の免責事項・PR 表記`}
+  bodyClass="is-static"
+>
+  <section class="wrap">
+    <nav class="breadcrumb mono" aria-label="パンくず">
+      <a href="/">HOME</a>
+      <span class="sep">/</span>
+      <span class="here">免責事項</span>
+    </nav>
+    <header class="art-hero">
+      <div class="art-tags">
+        <span class="art-pill id-pill">DISCLAIMER</span>
+      </div>
+      <h1>免責事項</h1>
+      <p class="lede">{SITE.name}の情報の正確性・利用者の自己責任・PR 表記・画像・外部リンクに関するポリシーです。</p>
+    </header>
+  </section>
 
-    <h2 style="color: var(--color-text);">情報の正確性について</h2>
-    <p>{SITE.name}（以下「当サイト」）に掲載する情報は、執筆時点でのメーカー公式情報・各レビューメディアの公開値・ベンチマークデータベース・ユーザー報告等の公開情報を基に整理したものです。可能な限り正確を期していますが、価格・仕様・在庫情報は時間とともに変動するため、購入前には必ずメーカー公式や販売店で最新情報をご確認ください。</p>
+  <div class="wrap art-body">
+    <article class="art-main no-sec-num">
+      <h2>情報の正確性について</h2>
+      <p>{SITE.name}（以下「当サイト」）に掲載する情報は、執筆時点でのメーカー公式情報・各レビューメディアの公開値・ベンチマークデータベース・ユーザー報告等の公開情報を基に整理したものです。可能な限り正確を期していますが、価格・仕様・在庫情報は時間とともに変動するため、購入前には必ずメーカー公式や販売店で最新情報をご確認ください。</p>
 
-    <h2 style="color: var(--color-text);">利用者の自己責任</h2>
-    <p>当サイトの情報をもとに行った購入・自作・運用に関して生じた損害について、当サイトは一切の責任を負いかねます。最終的な判断はご自身の責任で行ってください。</p>
+      <h2>利用者の自己責任</h2>
+      <p>当サイトの情報をもとに行った購入・自作・運用に関して生じた損害について、当サイトは一切の責任を負いかねます。最終的な判断はご自身の責任で行ってください。</p>
 
-    <h2 style="color: var(--color-text);">PR 表記</h2>
-    <p>当サイトはアフィリエイト広告（Amazon アソシエイト・楽天アフィリエイト・もしもアフィリエイト・バリューコマース・A8.net・Google AdSense 等）を含みます。記事内の商品リンクから購入があった場合、当サイトに紹介料が支払われることがあります。</p>
+      <h2>PR 表記</h2>
+      <p>当サイトはアフィリエイト広告（Amazon アソシエイト・楽天アフィリエイト・もしもアフィリエイト・バリューコマース・A8.net・Google AdSense 等）を含みます。記事内の商品リンクから購入があった場合、当サイトに紹介料が支払われることがあります。</p>
 
-    <h2 style="color: var(--color-text);">画像の使用について</h2>
-    <p>当サイトでは、メーカー公式プレスキット・Amazon Product Advertising API・自作AI生成画像・自前のスクリーンショットを使用しています。第三者著作物を使用する場合は、出典を明記し、各メーカー・サービスの利用規約に従います。</p>
+      <h2>画像の使用について</h2>
+      <p>当サイトでは、メーカー公式プレスキット・Amazon Product Advertising API・自作AI生成画像・自前のスクリーンショットを使用しています。第三者著作物を使用する場合は、出典を明記し、各メーカー・サービスの利用規約に従います。</p>
 
-    <h2 style="color: var(--color-text);">リンクについて</h2>
-    <p>当サイトからリンクする外部サイトの内容については、当サイトは責任を負いません。リンク先サイトの利用規約・プライバシーポリシーをご確認の上ご利用ください。</p>
-  </article>
-</BaseLayout>
+      <h2>リンクについて</h2>
+      <p>当サイトからリンクする外部サイトの内容については、当サイトは責任を負いません。リンク先サイトの利用規約・プライバシーポリシーをご確認の上ご利用ください。</p>
+    </article>
+  </div>
+</LabLayout>

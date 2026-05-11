@@ -1,169 +1,468 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { Icon } from 'astro-icon/components';
+/**
+ * 副業現場ラボ — TOP page (Lab Notebook redesign)
+ */
 import { getCollection } from 'astro:content';
-import { SITE, CATEGORIES, HUB_PAGES } from '../config';
+import LabLayout from '../layouts/LabLayout.astro';
 
 const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
 
-const featuredPosts = allPosts.filter((p) => p.data.featured).slice(0, 3);
-const recentPosts = allPosts.slice(0, 12);
+type CatId = 'ai' | 'start' | 'blog' | 'video' | 'code' | 'invest' | 'real';
+type CatDef = {
+  id: CatId; slug: string; name: string; label: string; c: string; cBg: string; desc: string;
+};
 
-const categoryEntries = Object.entries(CATEGORIES);
+const CATS: CatDef[] = [
+  { id: 'ai',     slug: 'ai-side-job',      name: 'AI × 副業',         label: 'AI', c: '#0F4F44', cBg: '#DCEFB4', desc: 'Claude / ChatGPT / Midjourney / Suno で副業を効率化・自動化' },
+  { id: 'start',  slug: 'getting-started',  name: '始め方ガイド',       label: 'ST', c: '#B47A1F', cBg: '#F8E7C2', desc: '副業を始める前の基礎知識・規程確認・確定申告・税務の基本' },
+  { id: 'blog',   slug: 'blog-writing',     name: 'ブログ・ライティング', label: 'WR', c: '#A93B43', cBg: '#F6D4D4', desc: 'アフィリエイト・Webライター・Kindle 出版・note 有料記事' },
+  { id: 'video',  slug: 'video-audio',      name: '動画・音声',         label: 'AV', c: '#5840BF', cBg: '#DDD3F4', desc: 'YouTube・BGM・効果音・音声配信・動画編集' },
+  { id: 'code',   slug: 'programming',      name: 'プログラミング',      label: 'CD', c: '#1F58BF', cBg: '#CFDDF7', desc: 'Web 制作・WordPress・モダンフロントエンド・受託' },
+  { id: 'invest', slug: 'investment',       name: '投資・資産運用',      label: '¥¥', c: '#1F8A5B', cBg: '#C8E6D2', desc: '高配当株・株主優待・FX・REIT・暗号資産・自動売買' },
+  { id: 'real',   slug: 'real-experience',  name: '私もやってみた',      label: 'EX', c: '#11161C', cBg: '#DCD7C5', desc: 'サイト主が実際に複数副業を運用するリアル体験談' },
+];
+
+const MISC = [
+  { name: 'クリエイティブ',   slug: 'creative' },
+  { name: '物販',             slug: 'retail' },
+  { name: 'スキルマーケット', slug: 'skill-market' },
+  { name: 'ツール比較',       slug: 'tools' },
+];
+
+const catCounts: Record<string, number> = {};
+allPosts.forEach((p) => { catCounts[p.data.category] = (catCounts[p.data.category] || 0) + 1; });
+
+const SLUG_TO_CAT: Record<string, CatDef> = Object.fromEntries(CATS.map((c) => [c.slug, c]));
+
+const featured = (() => {
+  const flagged = allPosts.filter((p) => p.data.featured);
+  const need = 3 - flagged.length;
+  if (need <= 0) return flagged.slice(0, 3);
+  const fillers = allPosts.filter((p) => !p.data.featured).slice(0, need);
+  return [...flagged, ...fillers].slice(0, 3);
+})();
+
+const latest = allPosts.slice(0, 12);
+
+const fmtDate = (d: Date) => d.toISOString().slice(0, 10);
+const sourceOf = (p: typeof allPosts[number]) =>
+  p.data.isRealExperience || p.data.category === 'real-experience' ? 'real' : 'ai';
+const idOf = (p: typeof allPosts[number]) =>
+  'P-' + (p.data.pubDate.getTime().toString(36).slice(-3).toUpperCase());
+
+const OWNER = {
+  active: 5,
+  monthlyRange: '¥38–72k',
+  experiments: [
+    { id: 'EXP-007', name: 'Kindle 出版',         catId: 'blog',   prog: 0.78, status: 'live'   },
+    { id: 'EXP-006', name: 'AI画像販売 (Adobe)',  catId: 'ai',     prog: 0.62, status: 'live'   },
+    { id: 'EXP-005', name: 'noteマガジン',        catId: 'blog',   prog: 0.45, status: 'eval'   },
+    { id: 'EXP-004', name: '高配当株運用',        catId: 'invest', prog: 0.91, status: 'live'   },
+    { id: 'EXP-003', name: 'YouTube切り抜き',     catId: 'video',  prog: 0.18, status: 'paused' },
+  ],
+} as const;
+
+const catById = (id: string) => CATS.find((c) => c.id === id);
+
+const ROADMAP = [
+  { id: 'M0', target: '¥0',     name: 'スタート',     title: 'まず副業の土台をつくる',
+    desc: '会社の副業規程、確定申告の基準、開業届の必要性。やる前に整理しておくと、あとで困らない3つのこと。',
+    months: '〜1ヶ月', risk: '低', recs: ['start', 'real'] },
+  { id: 'M1', target: '¥10k',   name: 'はじめの1万',  title: '失敗してもいいから、最初の収益を出す',
+    desc: 'メルカリ不用品販売、ココナラの小さな出品、ブログの記事数本。コストゼロから始められる入口を3つ。',
+    months: '1〜3ヶ月', risk: '低', recs: ['start', 'blog', 'code'] },
+  { id: 'M2', target: '¥50k',   name: 'ベース構築',   title: '伸ばす副業を1本に絞る',
+    desc: 'AI を使ったコンテンツ制作、note 有料記事、Webライター。本業に支障の出ない範囲で続けられる型をつくる。',
+    months: '3〜9ヶ月', risk: '中', recs: ['ai', 'blog', 'video'] },
+  { id: 'M3', target: '¥100k',  name: '柱を増やす',   title: '複数の柱を並走させて月10万へ',
+    desc: 'ストック型(配当・Kindle)とフロー型(受託・出品)を組み合わせる。サイト主は今このフェーズ。',
+    months: '9〜18ヶ月', risk: '中', recs: ['invest', 'code', 'real'] },
+  { id: 'M4', target: '¥300k+', name: '半独立',       title: '副業を事業に育てる',
+    desc: '法人化・法人成りの判断基準、自動化の作り込み、本業との両立限界の見極め。',
+    months: '18ヶ月〜', risk: '中〜高', recs: ['invest', 'ai', 'real'] },
+] as const;
+const DEFAULT_STAGE_IDX = 2;
 ---
 
-<BaseLayout>
-  <section class="border-b" style="border-color: var(--color-border);">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-      <div class="max-w-3xl">
-        <h1 class="text-3xl sm:text-5xl font-bold tracking-tight mb-4" style="color: var(--color-text);">
-          {SITE.name}
-        </h1>
-        <p class="text-lg sm:text-xl mb-6" style="color: var(--color-text-muted);">
-          副業の本当のところを、AI で集めて、たまに自分でも試して、リアルに伝える。
-          会社員のための<strong>副業情報キュレーション + 実体験ハイブリッド</strong>サイトです。
-        </p>
-        <div class="flex flex-wrap gap-3">
-          <a
-            href="/category/getting-started/"
-            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold transition-colors"
-            style="background-color: var(--color-primary); color: white;"
-          >
-            <Icon name="lucide:flag" class="w-4 h-4" />
-            副業の始め方を読む
-          </a>
-          <a
-            href="/category/ai-side-job/"
-            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-md font-semibold border transition-colors hover:bg-[color:var(--color-surface)]"
-            style="border-color: var(--color-border); color: var(--color-text);"
-          >
-            <Icon name="lucide:sparkles" class="w-4 h-4" />
-            AI × 副業を見る
-          </a>
+<LabLayout bodyClass="is-top">
+  <!-- ── Hero ── -->
+  <section class="hero wrap">
+    <div class="hero-left">
+      <div class="hero-eyebrow">
+        <span class="eyebrow"><span class="sig"></span>EXP / 副業現場ラボ — VOL.026</span>
+      </div>
+      <h1>
+        副業の<span class="hl">「現場のリアル」</span>を、<br />
+        AIで集めて、自分でも試す<span class="ink-mark">¹</span>。
+      </h1>
+      <p class="lede">
+        会社員のための<strong>副業情報キュレーション + 実体験ハイブリッド</strong>サイト。
+        AI が毎日 10 を超える副業領域の動向を整理し、サイト主が自ら 5 つの副業を実走しながら
+        「机上ではなく現場の本当のところ」をお届けします。
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="/category/getting-started/">
+          副業の始め方を読む <span class="arrow">→</span>
+        </a>
+        <a class="btn btn-ghost" href="/category/ai-side-job/">
+          <svg viewBox="0 0 24 24" class="icn" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/></svg>
+          AI × 副業を見る
+        </a>
+      </div>
+
+      <div class="curation-card">
+        <div class="icon">AI</div>
+        <div class="body">
+          <b>このサイトのつくり方:</b>{' '}
+          副業の動向は AI（Claude / ChatGPT）で日々情報を集約し、人間が編集。
+          さらに記事の半分以上は <b>サイト主の実体験ベース</b>。AI まとめと実走ログを 1 サイトに。
+          <div class="legend">
+            <span class="l-ai">AI キュレーション記事</span>
+            <span class="l-real">実体験ログ（やってみた）</span>
+          </div>
         </div>
       </div>
     </div>
+
+    <aside class="live-panel" aria-label="サイト主の実体験ダッシュボード">
+      <div class="live-head">
+        <div class="title"><span class="dot"></span>LIVE / OWNER LOG</div>
+        <div class="stamp mono" data-live-stamp>—</div>
+      </div>
+      <h3>サイト主の実体験ダッシュボード</h3>
+      <div class="live-grid">
+        <div class="live-stat">
+          <div class="lbl">RUNNING</div>
+          <div class="val">{OWNER.active}<span class="unit">本</span></div>
+          <div class="delta">+1 this month</div>
+        </div>
+        <div class="live-stat">
+          <div class="lbl">MONTHLY</div>
+          <div class="val">{OWNER.monthlyRange}</div>
+          <div class="delta flat">range, last 90d</div>
+        </div>
+        <div class="live-stat">
+          <div class="lbl">SINCE</div>
+          <div class="val">2024<span class="unit">/08</span></div>
+          <div class="delta flat">21 months</div>
+        </div>
+      </div>
+      <div class="live-list">
+        {OWNER.experiments.map((e) => {
+          const cat = catById(e.catId);
+          const cls = e.status === 'paused' ? 'is-paused' : e.status === 'eval' ? 'is-eval' : '';
+          return (
+            <div class={'live-row ' + cls}>
+              <div class="id">{e.id}</div>
+              <div class="name">{e.name}<span class="name-cat">/ {cat?.name}</span></div>
+              <div class="bar"><i style={`width:${e.prog * 100}%`}></i></div>
+              <div class="status">{e.status}</div>
+            </div>
+          );
+        })}
+      </div>
+      <div class="live-foot">
+        <span>※ 数値は目安。直近90日のレンジ。</span>
+        <a href="/category/real-experience/">全実験ログを見る →</a>
+      </div>
+    </aside>
   </section>
 
-  {featuredPosts.length > 0 && (
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h2 class="text-2xl font-bold mb-6" style="color: var(--color-text); border: none; padding: 0;">
-        📌 はじめての方におすすめ
-      </h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {featuredPosts.map((post) => (
+  <!-- ── Featured ── -->
+  <section class="section wrap" id="featured">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow"><span class="sig"></span>SEC.01 / 編集部のおすすめ</div>
+        <h2><span class="num mono">01</span>はじめての方におすすめ</h2>
+      </div>
+      <div class="sub">最初に読むならこの3本。AIが集約した動向と、サイト主の現場感が両方入った記事。</div>
+    </div>
+    <div class="feat-grid">
+      {featured.map((p, i) => {
+        const cat = SLUG_TO_CAT[p.data.category] ?? CATS[0];
+        const isBig = i === 0;
+        return (
           <a
-            href={`/posts/${post.id}/`}
-            class="block rounded-lg border overflow-hidden transition-colors hover:bg-[color:var(--color-surface)]"
-            style="border-color: var(--color-border);"
+            class={'feat' + (isBig ? ' is-big' : '')}
+            data-cat={cat.id}
+            href={`/posts/${p.id}/`}
+            style={`--c-ai:${cat.c};--c-ai-bg:${cat.cBg}`}
           >
-            {post.data.heroImage && (
-              <img
-                src={post.data.heroImage}
-                alt={post.data.heroImageAlt ?? post.data.title}
-                width="1200"
-                height="630"
-                loading="lazy"
-                decoding="async"
-                class="w-full h-auto aspect-[1200/630] object-cover"
-                style="background-color: var(--color-surface);"
-              />
-            )}
-            <div class="p-5">
-              <p class="text-xs mb-2" style="color: var(--color-text-muted);">
-                {CATEGORIES[post.data.category].name}
-              </p>
-              <h3 class="font-semibold mb-2" style="color: var(--color-text); padding: 0; margin: 0;">
-                {post.data.title}
-              </h3>
-              <p class="text-sm" style="color: var(--color-text-muted);">{post.data.description}</p>
+            <div class="stripe" style={`background:${cat.c}`}></div>
+            <div class="corner mono">{idOf(p)}</div>
+            <div>
+              <div class="feat-tag" style={isBig ? '' : `background:${cat.c};color:#fff`}>
+                <span class="d"></span>{cat.name}
+              </div>
+              <h3>{p.data.title}</h3>
+              <p>{p.data.description}</p>
             </div>
+            <div class="meta mono">
+              <span>{fmtDate(p.data.pubDate)} · {sourceOf(p) === 'real' ? '実体験' : 'AIまとめ'}</span>
+              <span class="read">→</span>
+            </div>
+          </a>
+        );
+      })}
+    </div>
+  </section>
+
+  <!-- ── Category grid ── -->
+  <section class="section wrap cat-wrap" id="cat">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow"><span class="sig"></span>SEC.02 / カテゴリから探す</div>
+        <h2><span class="num mono">02</span>11領域 + その他で副業を分類</h2>
+      </div>
+    </div>
+    <div class="cat-grid">
+      {CATS.map((c, i) => (
+        <a class="cat" href={`/category/${c.slug}/`} style={`--cat-bg:${c.cBg};--cat-fg:${c.c}`}>
+          <div class="cat-num mono">/{String(i + 1).padStart(2, '0')}</div>
+          <div class="cat-icon" style={`background:${c.cBg};color:${c.c}`}>{c.label}</div>
+          <h3>{c.name}</h3>
+          <p>{c.desc}</p>
+          <div class="cat-foot">
+            <span class="mono">{catCounts[c.slug] ?? 0} posts</span>
+          </div>
+        </a>
+      ))}
+    </div>
+
+    <div class="cat-misc">
+      <div class="cat-misc-head">
+        <div class="lbl">そのほかの領域</div>
+        <div class="ct mono">
+          {MISC.reduce((s, m) => s + (catCounts[m.slug] ?? 0), 0)} posts / {MISC.length} categories
+        </div>
+      </div>
+      <div class="cat-misc-list">
+        {MISC.map((m) => (
+          <a href={`/category/${m.slug}/`} class="cat-chip">
+            {m.name} <span class="ct">{catCounts[m.slug] ?? 0}</span>
           </a>
         ))}
       </div>
-    </section>
-  )}
+    </div>
+  </section>
 
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t" style="border-color: var(--color-border);">
-    <h2 class="text-2xl font-bold mb-6" style="color: var(--color-text); border: none; padding: 0;">
-      🗂️ カテゴリから探す
-    </h2>
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-      {categoryEntries.map(([slug, cat]) => (
-        <a
-          href={`/category/${slug}/`}
-          class="p-4 rounded-lg border transition-colors hover:bg-[color:var(--color-surface)]"
-          style="border-color: var(--color-border);"
-        >
-          <Icon name={cat.icon} class="w-6 h-6 mb-2" style="color: var(--color-primary);" />
-          <h3 class="font-semibold mb-1 text-sm" style="color: var(--color-text); padding: 0; margin: 0;">
-            {cat.name}
-          </h3>
-          <p class="text-xs leading-snug" style="color: var(--color-text-muted);">
-            {cat.description}
-          </p>
-        </a>
+  <!-- ── Roadmap ── -->
+  <section class="section wrap">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow"><span class="sig"></span>SEC.03 / 月収目標別ロードマップ</div>
+        <h2><span class="num mono">03</span>いま、自分はどの段階？</h2>
+      </div>
+      <div class="sub">月収目標を選ぶと、次に読むべき記事と、その段階で外しがちな注意点が見えます。</div>
+    </div>
+
+    <div class="roadmap-card" data-roadmap>
+      <div class="roadmap-tabs" role="tablist">
+        {ROADMAP.map((s, i) => (
+          <button
+            class={'roadmap-tab' + (i === DEFAULT_STAGE_IDX ? ' is-active' : '')}
+            data-stage={i}
+            role="tab"
+            aria-selected={i === DEFAULT_STAGE_IDX ? 'true' : 'false'}
+          >
+            {s.name}<span class="yen mono">{s.target}</span>
+          </button>
+        ))}
+      </div>
+
+      <div class="roadmap-progress">
+        <div class="bar" data-roadmap-bar style={`width:${(DEFAULT_STAGE_IDX / (ROADMAP.length - 1)) * 100}%`}></div>
+        <div class="marks">
+          {ROADMAP.map((_, i) => (
+            <i
+              data-mark={i}
+              class={i < DEFAULT_STAGE_IDX ? 'done' : i === DEFAULT_STAGE_IDX ? 'now' : ''}
+            ></i>
+          ))}
+        </div>
+      </div>
+
+      {ROADMAP.map((s, i) => (
+        <div class="roadmap-body" data-stage-body={i} hidden={i !== DEFAULT_STAGE_IDX}>
+          <div class="roadmap-stage">
+            <h3>
+              <span class="target mono">{s.target}</span>
+              {s.title}
+            </h3>
+            <p>{s.desc}</p>
+            <div class="roadmap-meta">
+              <span>所要期間 <span class="v">{s.months}</span></span>
+              <span>リスク <span class="v">{s.risk}</span></span>
+            </div>
+          </div>
+          <div class="roadmap-recs">
+            <div class="lbl">この段階のおすすめカテゴリ</div>
+            {s.recs.map((rid) => {
+              const c = catById(rid);
+              if (!c) return null;
+              return (
+                <a class="rec-row" href={`/category/${c.slug}/`}>
+                  <span class="swatch" style={`background:${c.c}`}></span>
+                  <div class="text">
+                    <b>{c.name}</b>
+                    <span class="desc">{c.desc}</span>
+                  </div>
+                  <span class="arrow mono">→</span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
       ))}
     </div>
   </section>
 
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t" style="border-color: var(--color-border);">
-    <h2 class="text-2xl font-bold mb-6" style="color: var(--color-text); border: none; padding: 0;">
-      💡 用途別ハブ
-    </h2>
-    <div class="flex flex-wrap gap-3">
-      {HUB_PAGES.map((hub) => (
-        <a
-          href={hub.href}
-          class="px-4 py-2 rounded-full border text-sm transition-colors hover:bg-[color:var(--color-surface)]"
-          style="border-color: var(--color-border); color: var(--color-text);"
-        >
-          {hub.label}
-        </a>
-      ))}
+  <!-- ── Latest ── -->
+  <section class="section wrap">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow"><span class="sig"></span>SEC.04 / 最新の実験ログ</div>
+        <h2><span class="num mono">04</span>最新記事</h2>
+      </div>
+    </div>
+
+    <div class="latest-toolbar" data-latest-toolbar>
+      <button class="filter-chip is-active" data-filter="all">
+        すべて<span class="ct mono">{allPosts.length}</span>
+      </button>
+      {CATS.map((c) =>
+        (catCounts[c.slug] ?? 0) > 0 ? (
+          <button class="filter-chip" data-filter={c.slug} style={`--c:${c.c}`}>
+            <span class="swatch" style={`background:${c.c}`}></span>
+            {c.name}<span class="ct mono">{catCounts[c.slug]}</span>
+          </button>
+        ) : null,
+      )}
+    </div>
+
+    <div class="latest-list" data-latest-list>
+      {latest.map((p) => {
+        const c = SLUG_TO_CAT[p.data.category] ?? CATS[0];
+        const src = sourceOf(p);
+        return (
+          <a
+            class="post"
+            href={`/posts/${p.id}/`}
+            data-cat={p.data.category}
+            style={`--c-bg:${c.cBg};--c-fg:${c.c}`}
+          >
+            <div class="post-slug">
+              <div class="icon">{c.label}</div>
+              <div class="id">{idOf(p)}</div>
+            </div>
+            <div class="post-body">
+              <div class="post-meta">
+                <span class="cat-pill">{c.name}</span>
+                <span>·</span>
+                <span>{fmtDate(p.data.pubDate)}</span>
+                <span style="flex:1"></span>
+                <span class={'ai-mark' + (src === 'real' ? ' is-real' : '')}>
+                  {src === 'real' ? '◆ 実体験' : '◇ AIまとめ'}
+                </span>
+              </div>
+              <h4>{p.data.title}</h4>
+              <p class="desc">{p.data.description}</p>
+            </div>
+          </a>
+        );
+      })}
     </div>
   </section>
 
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t" style="border-color: var(--color-border);">
-    <h2 class="text-2xl font-bold mb-6" style="color: var(--color-text); border: none; padding: 0;">
-      📰 最新記事
-    </h2>
-    {recentPosts.length === 0 ? (
-      <p style="color: var(--color-text-muted);">記事は近日公開予定です。</p>
-    ) : (
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {recentPosts.map((post) => (
-          <a
-            href={`/posts/${post.id}/`}
-            class="block rounded-lg border overflow-hidden transition-colors hover:bg-[color:var(--color-surface)]"
-            style="border-color: var(--color-border);"
-          >
-            {post.data.heroImage && (
-              <img
-                src={post.data.heroImage}
-                alt={post.data.heroImageAlt ?? post.data.title}
-                width="1200"
-                height="630"
-                loading="lazy"
-                decoding="async"
-                class="w-full h-auto aspect-[1200/630] object-cover"
-                style="background-color: var(--color-surface);"
-              />
-            )}
-            <div class="p-5">
-              <p class="text-xs mb-2" style="color: var(--color-text-muted);">
-                {post.data.pubDate.toISOString().slice(0, 10)} ・ {CATEGORIES[post.data.category].name}
-              </p>
-              <h3 class="font-semibold mb-2" style="color: var(--color-text); padding: 0; margin: 0;">
-                {post.data.title}
-              </h3>
-              <p class="text-sm" style="color: var(--color-text-muted);">{post.data.description}</p>
-            </div>
-          </a>
-        ))}
-      </div>
-    )}
-  </section>
-</BaseLayout>
+  <script slot="after-footer" is:inline>
+    // 1) LIVE timestamp
+    (function () {
+      const stamp = document.querySelector('[data-live-stamp]');
+      if (!stamp) return;
+      const tick = () => {
+        const d = new Date();
+        const y = d.getFullYear();
+        const M = String(d.getMonth() + 1).padStart(2, '0');
+        const D = String(d.getDate()).padStart(2, '0');
+        const h = String(d.getHours()).padStart(2, '0');
+        const m = String(d.getMinutes()).padStart(2, '0');
+        const s = String(d.getSeconds()).padStart(2, '0');
+        stamp.textContent = `${y}-${M}-${D} ${h}:${m}:${s} JST`;
+      };
+      tick();
+      setInterval(tick, 1000);
+    })();
+
+    // 2) Highlighter draw-on-scroll
+    (function () {
+      document.body.classList.add('is-drawing');
+      const els = document.querySelectorAll('.hero h1 .hl, .hero p.lede strong');
+      if (!('IntersectionObserver' in window)) {
+        els.forEach((el) => el.classList.add('is-drawn'));
+        return;
+      }
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry, i) => {
+            if (entry.isIntersecting) {
+              setTimeout(() => entry.target.classList.add('is-drawn'), i * 140);
+              io.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.6, rootMargin: '0px 0px -6% 0px' },
+      );
+      els.forEach((el) => io.observe(el));
+    })();
+
+    // 3) Roadmap stage tabs
+    (function () {
+      const root = document.querySelector('[data-roadmap]');
+      if (!root) return;
+      const tabs = root.querySelectorAll('.roadmap-tab');
+      const bodies = root.querySelectorAll('[data-stage-body]');
+      const marks = root.querySelectorAll('[data-mark]');
+      const bar = root.querySelector('[data-roadmap-bar]');
+      const total = tabs.length;
+      tabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+          const idx = Number(tab.dataset.stage);
+          tabs.forEach((t, i) => {
+            const active = i === idx;
+            t.classList.toggle('is-active', active);
+            t.setAttribute('aria-selected', active ? 'true' : 'false');
+          });
+          bodies.forEach((b, i) => { b.hidden = i !== idx; });
+          marks.forEach((m, i) => {
+            m.classList.remove('done', 'now');
+            if (i < idx) m.classList.add('done');
+            else if (i === idx) m.classList.add('now');
+          });
+          if (bar) bar.style.width = (idx / (total - 1)) * 100 + '%';
+        });
+      });
+    })();
+
+    // 4) Latest filter chips
+    (function () {
+      const toolbar = document.querySelector('[data-latest-toolbar]');
+      const list = document.querySelector('[data-latest-list]');
+      if (!toolbar || !list) return;
+      const chips = toolbar.querySelectorAll('.filter-chip');
+      const posts = list.querySelectorAll('.post');
+      chips.forEach((chip) => {
+        chip.addEventListener('click', () => {
+          chips.forEach((c) => c.classList.remove('is-active'));
+          chip.classList.add('is-active');
+          const f = chip.dataset.filter;
+          posts.forEach((p) => {
+            const cat = p.dataset.cat;
+            p.classList.toggle('is-hidden', f !== 'all' && cat !== f);
+          });
+        });
+      });
+    })();
+  </script>
+</LabLayout>

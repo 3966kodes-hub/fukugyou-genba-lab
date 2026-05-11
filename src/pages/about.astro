@@ -1,52 +1,90 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+/**
+ * 副業現場ラボ — About page (Lab Notebook redesign)
+ */
+import LabLayout from '../layouts/LabLayout.astro';
 import { SITE } from '../config';
 ---
 
-<BaseLayout title="運営者情報・このサイトについて" description={`${SITE.name} の運営方針・編集ポリシー・運営者情報`}>
-  <article class="max-w-3xl mx-auto px-4 sm:px-6 py-10">
-    <h1 style="color: var(--color-text);">運営者情報・このサイトについて</h1>
+<LabLayout
+  title="運営者情報・このサイトについて"
+  description={`${SITE.name} の運営方針・編集ポリシー・運営者情報`}
+  bodyClass="is-static"
+>
+  <section class="wrap">
+    <nav class="breadcrumb mono" aria-label="パンくず">
+      <a href="/">HOME</a>
+      <span class="sep">/</span>
+      <span class="here">運営者情報</span>
+    </nav>
 
-    <h2 style="color: var(--color-text);">サイトの目的</h2>
-    <p>
-      {SITE.name}は、<strong>会社員のための副業情報キュレーション + 実体験ハイブリッドサイト</strong>です。
-      副業を始めたい・続けたい・効率化したい人に向けて、ジャンル別の体系的な解説、実体験者の発信まとめ、
-      AI（Claude / ChatGPT 等）を使った副業効率化、そして運営者自身の複数副業ポートフォリオ実況を提供します。
-    </p>
+    <header class="art-hero">
+      <div class="art-tags">
+        <span class="art-pill id-pill">ABOUT</span>
+        <span class="art-pill ai-pill">◆ サイト主による直筆</span>
+      </div>
+      <h1>運営者情報・このサイトについて</h1>
+      <p class="lede">{SITE.name} の運営方針・編集ポリシー・運営者情報をまとめています。</p>
+    </header>
+  </section>
 
-    <h2 style="color: var(--color-text);">サイトのコンセプト</h2>
-    <p>
-      <strong>「副業の本当のところを、AI で集めて、たまに自分でも試して、リアルに伝える」</strong>
-    </p>
-    <ul>
-      <li>① <strong>副業ジャンル別キュレーション</strong>（50%）：ブログ・動画・プログラミング・物販・投資など、ジャンル別の網羅解説</li>
-      <li>② <strong>実体験者の発信まとめ</strong>（25%）：note / YouTube / X / 個人ブログから体験者の声を集約</li>
-      <li>③ <strong>運営者本人の実体験ログ</strong>（10%）：BGM・LINE スタンプ・Kindle 出版・複数アフィブログ運営のリアル</li>
-      <li>④ <strong>AI × 副業</strong>（10%）：Claude / ChatGPT / Midjourney / Suno を使った副業効率化レシピ</li>
-      <li>⑤ <strong>確定申告・税務・副業規程の基礎</strong>（5%）：会社員副業に必須の税務知識</li>
-    </ul>
+  <div class="wrap art-body">
+    <article class="art-main no-sec-num">
+      <h2>サイトの目的</h2>
+      <p>
+        {SITE.name}は、<strong>会社員のための副業情報キュレーション + 実体験ハイブリッドサイト</strong>です。
+        副業を始めたい・続けたい・効率化したい人に向けて、ジャンル別の体系的な解説、実体験者の発信まとめ、
+        AI（Claude / ChatGPT 等）を使った副業効率化、そして運営者自身の複数副業ポートフォリオ実況を提供します。
+      </p>
 
-    <h2 style="color: var(--color-text);">編集ポリシー</h2>
-    <ul>
-      <li><strong>情報源の明示</strong>：すべての記事で、参照した体験者の note / YouTube / X / 個人ブログ等を出典として明記します（`&lt;ExperiencerVoice /&gt;` コンポーネントで強制）。</li>
-      <li><strong>複数ソースのクロスチェック</strong>：体験者の声は最低 3 人以上から収集し、傾向と差を整理します。</li>
-      <li><strong>引用は最小限</strong>：他媒体の文章は短文（200 字以内）に限定し、要約・再構成を中心とします。</li>
-      <li><strong>誇大表現の排除</strong>：「絶対に稼げる」「必ず月 ○○ 万円」等の断定表現を避け、根拠付き・範囲表現で記述します。</li>
-      <li><strong>収益数字は範囲公開</strong>：個別の具体額ではなく、「〜1 万 / 1〜5 万 / 5〜10 万 / 10〜30 万 / 30 万＋」のレンジで表示します。</li>
-      <li><strong>アフィリエイト広告の明示</strong>：すべての ASP リンクに `&lt;PRBadge /&gt;` を必須化し、景表法・ステマ規制に対応します。</li>
-    </ul>
+      <h2>サイトのコンセプト</h2>
+      <p><strong>「副業の本当のところを、AI で集めて、たまに自分でも試して、リアルに伝える」</strong></p>
+      <ul>
+        <li>① <strong>副業ジャンル別キュレーション</strong>（50%）：ブログ・動画・プログラミング・物販・投資など、ジャンル別の網羅解説</li>
+        <li>② <strong>実体験者の発信まとめ</strong>（25%）：note / YouTube / X / 個人ブログから体験者の声を集約</li>
+        <li>③ <strong>運営者本人の実体験ログ</strong>（10%）：BGM・LINE スタンプ・Kindle 出版・複数アフィブログ運営のリアル</li>
+        <li>④ <strong>AI × 副業</strong>（10%）：Claude / ChatGPT / Midjourney / Suno を使った副業効率化レシピ</li>
+        <li>⑤ <strong>確定申告・税務・副業規程の基礎</strong>（5%）：会社員副業に必須の税務知識</li>
+      </ul>
 
-    <h2 style="color: var(--color-text);">運営者</h2>
-    <p>
-      ペンネーム「<strong>とっても！ハッピーマン</strong>」。会社員（コンサル業界）として本業を続けながら、
-      副業ポートフォリオとして BGM 生成・LINE スタンプ・Kindle 出版・複数アフィリエイトブログ運営を同時並行している、
-      現役の副業プレイヤーです。Kindle『39歳、年収800万円アップの転職術』（ASIN: B0DNQ4RQ19）を出版済み。
-    </p>
-    <p>
-      <em>※ 本業の所属企業との関連性は一切公開しておらず、すべて私的な副業活動として運営しています。</em>
-    </p>
+      <h2>編集ポリシー</h2>
+      <ul>
+        <li><strong>情報源の明示</strong>：すべての記事で、参照した体験者の note / YouTube / X / 個人ブログ等を出典として明記します。</li>
+        <li><strong>複数ソースのクロスチェック</strong>：体験者の声は最低 3 人以上から収集し、傾向と差を整理します。</li>
+        <li><strong>引用は最小限</strong>：他媒体の文章は短文（200 字以内）に限定し、要約・再構成を中心とします。</li>
+        <li><strong>誇大表現の排除</strong>：「絶対に稼げる」「必ず月 ○○ 万円」等の断定表現を避け、根拠付き・範囲表現で記述します。</li>
+        <li><strong>収益数字は範囲公開</strong>：個別の具体額ではなく、「〜1 万 / 1〜5 万 / 5〜10 万 / 10〜30 万 / 30 万＋」のレンジで表示します。</li>
+        <li><strong>アフィリエイト広告の明示</strong>：すべての ASP リンクに PR バッジを必須化し、景表法・ステマ規制に対応します。</li>
+      </ul>
 
-    <h2 style="color: var(--color-text);">お問い合わせ</h2>
-    <p><a href="/contact/">お問い合わせフォーム</a>からご連絡ください。</p>
-  </article>
-</BaseLayout>
+      <h2>運営者</h2>
+      <p>
+        ペンネーム「<strong>とっても！ハッピーマン</strong>」。会社員（コンサル業界）として本業を続けながら、
+        副業ポートフォリオとして BGM 生成・LINE スタンプ・Kindle 出版・複数アフィリエイトブログ運営を同時並行している、
+        現役の副業プレイヤーです。Kindle『39歳、年収800万円アップの転職術』（ASIN: B0DNQ4RQ19）を出版済み。
+      </p>
+      <p><em>※ 本業の所属企業との関連性は一切公開しておらず、すべて私的な副業活動として運営しています。</em></p>
+
+      <h2>お問い合わせ</h2>
+      <p><a href="/contact/">お問い合わせフォーム</a>からご連絡ください。</p>
+
+      <aside class="author-card">
+        <div class="av">FL</div>
+        <div class="info">
+          <h4>サイト主 — 副業現場ラボ</h4>
+          <div class="role mono">CONSULTANT / 5+ SIDE-JOBS RUNNING</div>
+          <p>
+            現役会社員（コンサル）。2024年から複数副業を並走運用中。
+            AI を使ったコンテンツ制作・Kindle 出版・配当株運用など、自分でやってみた数値を中心に発信しています。
+          </p>
+          <div class="stats">
+            <span>RUNNING <b>5本</b></span>
+            <span>SINCE <b>2024-08</b></span>
+            <span>MONTHLY <b>¥38–72k</b></span>
+            <span>KINDLE <b>1冊</b></span>
+          </div>
+        </div>
+      </aside>
+    </article>
+  </div>
+</LabLayout>

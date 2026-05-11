@@ -1,115 +1,86 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+/**
+ * 副業現場ラボ — Contact page (Lab Notebook redesign)
+ */
+import LabLayout from '../layouts/LabLayout.astro';
 import { SITE } from '../config';
 
 const FORMSPREE_ENDPOINT = import.meta.env.PUBLIC_FORMSPREE_ENDPOINT;
 ---
 
-<BaseLayout title="お問い合わせ" description={`${SITE.name} へのお問い合わせ`}>
-  <article class="max-w-3xl mx-auto px-4 sm:px-6 py-10">
-    <h1 style="color: var(--color-text);">お問い合わせ</h1>
-    <p>記事内容のご指摘・取材依頼・広告掲載・その他のお問い合わせは、下記フォームよりご連絡ください。</p>
+<LabLayout
+  title="お問い合わせ"
+  description={`${SITE.name} へのお問い合わせ`}
+  bodyClass="is-static"
+>
+  <section class="wrap">
+    <nav class="breadcrumb mono" aria-label="パンくず">
+      <a href="/">HOME</a>
+      <span class="sep">/</span>
+      <span class="here">お問い合わせ</span>
+    </nav>
 
-    {FORMSPREE_ENDPOINT ? (
-      <form
-        action={FORMSPREE_ENDPOINT}
-        method="POST"
-        class="my-8 space-y-5 p-6 rounded-lg border"
-        style="border-color: var(--color-border); background-color: var(--color-surface);"
-      >
-        <div>
-          <label for="name" class="block text-sm font-semibold mb-1" style="color: var(--color-text);">
-            お名前 <span style="color: var(--color-primary);">*</span>
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            required
-            class="w-full px-3 py-2 rounded-md border"
-            style="border-color: var(--color-border); background-color: var(--color-bg); color: var(--color-text);"
-          />
-        </div>
+    <header class="art-hero">
+      <div class="art-tags">
+        <span class="art-pill id-pill">CONTACT</span>
+      </div>
+      <h1>お問い合わせ</h1>
+      <p class="lede">記事内容のご指摘・取材依頼・広告掲載・その他のお問い合わせは、下記フォームよりご連絡ください。</p>
+    </header>
+  </section>
 
-        <div>
-          <label for="email" class="block text-sm font-semibold mb-1" style="color: var(--color-text);">
-            メールアドレス <span style="color: var(--color-primary);">*</span>
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            required
-            class="w-full px-3 py-2 rounded-md border"
-            style="border-color: var(--color-border); background-color: var(--color-bg); color: var(--color-text);"
-          />
-        </div>
-
-        <div>
-          <label for="subject" class="block text-sm font-semibold mb-1" style="color: var(--color-text);">
-            件名
-          </label>
-          <select
-            id="subject"
-            name="subject"
-            class="w-full px-3 py-2 rounded-md border"
-            style="border-color: var(--color-border); background-color: var(--color-bg); color: var(--color-text);"
-          >
-            <option value="記事内容について">記事内容のご指摘・更新依頼</option>
-            <option value="取材・寄稿依頼">取材・寄稿依頼</option>
-            <option value="広告・スポンサー掲載">広告・スポンサー掲載</option>
-            <option value="体験談掲載依頼">体験談掲載・引用許諾の依頼</option>
-            <option value="その他">その他</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="message" class="block text-sm font-semibold mb-1" style="color: var(--color-text);">
-            お問い合わせ内容 <span style="color: var(--color-primary);">*</span>
-          </label>
-          <textarea
-            id="message"
-            name="message"
-            rows="6"
-            required
-            class="w-full px-3 py-2 rounded-md border"
-            style="border-color: var(--color-border); background-color: var(--color-bg); color: var(--color-text);"
-          ></textarea>
-        </div>
-
-        <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off" />
-
-        <button
-          type="submit"
-          class="px-6 py-2.5 rounded-md font-semibold transition-colors"
-          style="background-color: var(--color-primary); color: white;"
-        >
-          送信する
-        </button>
-
-        <p class="text-xs mt-3" style="color: var(--color-text-muted);">
-          送信内容は Formspree（米国）経由で受け付けます。プライバシーポリシーをご一読のうえ送信してください。
+  <div class="wrap art-body">
+    <article class="art-main no-sec-num">
+      {FORMSPREE_ENDPOINT ? (
+        <form action={FORMSPREE_ENDPOINT} method="POST" class="lab-form">
+          <div>
+            <label for="name">お名前 <span class="req">*</span></label>
+            <input type="text" id="name" name="name" required />
+          </div>
+          <div>
+            <label for="email">メールアドレス <span class="req">*</span></label>
+            <input type="email" id="email" name="email" required />
+          </div>
+          <div>
+            <label for="subject">件名</label>
+            <select id="subject" name="subject">
+              <option value="記事内容について">記事内容のご指摘・更新依頼</option>
+              <option value="取材・寄稿依頼">取材・寄稿依頼</option>
+              <option value="広告・スポンサー掲載">広告・スポンサー掲載</option>
+              <option value="体験談掲載依頼">体験談掲載・引用許諾の依頼</option>
+              <option value="その他">その他</option>
+            </select>
+          </div>
+          <div>
+            <label for="message">お問い合わせ内容 <span class="req">*</span></label>
+            <textarea id="message" name="message" rows="6" required></textarea>
+          </div>
+          <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off" />
+          <div>
+            <button type="submit" class="btn btn-primary">送信する <span class="arrow">→</span></button>
+            <p class="form-note">送信内容は Formspree（米国）経由で受け付けます。プライバシーポリシーをご一読のうえ送信してください。</p>
+          </div>
+        </form>
+      ) : (
+        <p style="font-size:13px;color:var(--ink-3);padding:18px;background:var(--paper-2);border-radius:var(--radius);border:1px dashed rgba(17,22,28,.18)">
+          ※ お問い合わせフォームは現在準備中です。サイト準備整い次第、本ページに設置します。
         </p>
-      </form>
-    ) : (
-      <p class="text-sm my-6" style="color: var(--color-text-muted);">
-        ※ お問い合わせフォームは現在準備中です。サイト準備整い次第、本ページに設置します。
-      </p>
-    )}
+      )}
 
-    <h2 style="color: var(--color-text);">対応内容</h2>
-    <ul>
-      <li>記事内容の誤りのご指摘・更新依頼</li>
-      <li>取材・寄稿依頼</li>
-      <li>広告・スポンサー掲載に関するお問い合わせ</li>
-      <li>体験談・実績の掲載依頼／引用許諾のご相談</li>
-    </ul>
+      <h2>対応内容</h2>
+      <ul>
+        <li>記事内容の誤りのご指摘・更新依頼</li>
+        <li>取材・寄稿依頼</li>
+        <li>広告・スポンサー掲載に関するお問い合わせ</li>
+        <li>体験談・実績の掲載依頼／引用許諾のご相談</li>
+      </ul>
 
-    <h2 style="color: var(--color-text);">対応外の内容</h2>
-    <ul>
-      <li>個別の副業相談（記事のコメント欄や X DM・リベシティ等のコミュニティをご利用ください）</li>
-      <li>投資助言・確定確約・税務相談（資格者ではないため一般論のみ）</li>
-      <li>営業・勧誘目的のご連絡（マルチ商法・情報商材販売・無在庫転売の紹介依頼は対応不可）</li>
-    </ul>
-  </article>
-</BaseLayout>
+      <h2>対応外の内容</h2>
+      <ul>
+        <li>個別の副業相談（記事のコメント欄や X DM・リベシティ等のコミュニティをご利用ください）</li>
+        <li>投資助言・確定確約・税務相談（資格者ではないため一般論のみ）</li>
+        <li>営業・勧誘目的のご連絡（マルチ商法・情報商材販売・無在庫転売の紹介依頼は対応不可）</li>
+      </ul>
+    </article>
+  </div>
+</LabLayout>

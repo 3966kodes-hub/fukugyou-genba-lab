@@ -1,6 +1,9 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+/**
+ * 副業現場ラボ — Tag listing page (Lab Notebook redesign)
+ */
 import { getCollection } from 'astro:content';
+import LabLayout from '../../layouts/LabLayout.astro';
 import { CATEGORIES } from '../../config';
 
 export async function getStaticPaths() {
@@ -20,48 +23,80 @@ export async function getStaticPaths() {
 }
 
 const { tag, posts } = Astro.props;
+
+const CAT_TOKENS: Record<string, { label: string; c: string; cBg: string }> = {
+  'ai-side-job':     { label: 'AI', c: '#0F4F44', cBg: '#DCEFB4' },
+  'getting-started': { label: 'ST', c: '#B47A1F', cBg: '#F8E7C2' },
+  'blog-writing':    { label: 'WR', c: '#A93B43', cBg: '#F6D4D4' },
+  'video-audio':     { label: 'AV', c: '#5840BF', cBg: '#DDD3F4' },
+  'creative':        { label: 'CR', c: '#A93B43', cBg: '#F6D4D4' },
+  'programming':     { label: 'CD', c: '#1F58BF', cBg: '#CFDDF7' },
+  'retail':          { label: 'RT', c: '#B47A1F', cBg: '#F8E7C2' },
+  'investment':      { label: '¥¥', c: '#1F8A5B', cBg: '#C8E6D2' },
+  'skill-market':    { label: 'SK', c: '#5840BF', cBg: '#DDD3F4' },
+  'tools':           { label: 'TL', c: '#5A6573', cBg: '#ECE7D8' },
+  'real-experience': { label: 'EX', c: '#11161C', cBg: '#DCD7C5' },
+};
+
+const fmtDate = (d: Date) => d.toISOString().slice(0, 10);
+const idOf = (p: typeof posts[number]) =>
+  'P-' + (p.data.pubDate.getTime().toString(36).slice(-3).toUpperCase());
+const sourceOf = (p: typeof posts[number]) =>
+  p.data.isRealExperience || p.data.category === 'real-experience' ? 'real' : 'ai';
 ---
 
-<BaseLayout title={`タグ: ${tag}`} description={`タグ「${tag}」が付いた記事一覧`}>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <nav aria-label="パンくず" class="mb-6 text-sm" style="color: var(--color-text-muted);">
-      <a href="/" class="hover:underline">ホーム</a>
-      <span class="mx-2">/</span>
-      <span>タグ：#{tag}</span>
+<LabLayout
+  title={`タグ: ${tag}`}
+  description={`タグ「${tag}」が付いた記事一覧`}
+  bodyClass="is-list"
+>
+  <section class="wrap">
+    <nav class="breadcrumb mono" aria-label="パンくず">
+      <a href="/">HOME</a>
+      <span class="sep">/</span>
+      <span class="here">タグ：#{tag}</span>
     </nav>
-    <h1 class="mb-6" style="color: var(--color-text);">#{tag}</h1>
-    <p class="mb-8 text-sm" style="color: var(--color-text-muted);">{posts.length} 件の記事</p>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {posts.map((post) => (
-        <a
-          href={`/posts/${post.id}/`}
-          class="block rounded-lg border overflow-hidden transition-colors hover:bg-[color:var(--color-surface)]"
-          style="border-color: var(--color-border);"
-        >
-          {post.data.heroImage && (
-            <img
-              src={post.data.heroImage}
-              alt={post.data.heroImageAlt ?? post.data.title}
-              width="1200"
-              height="630"
-              loading="lazy"
-              decoding="async"
-              class="w-full h-auto aspect-[1200/630] object-cover"
-              style="background-color: var(--color-surface);"
-            />
-          )}
-          <div class="p-5">
-            <p class="text-xs mb-2" style="color: var(--color-text-muted);">
-              {post.data.pubDate.toISOString().slice(0, 10)} ・ {CATEGORIES[post.data.category].name}
-            </p>
-            <h3 class="font-semibold mb-2" style="color: var(--color-text); padding: 0; margin: 0;">
-              {post.data.title}
-            </h3>
-            <p class="text-sm" style="color: var(--color-text-muted);">{post.data.description}</p>
-          </div>
-        </a>
-      ))}
+    <header class="list-hero">
+      <div class="lh-row">
+        <div class="cat-icon-lg" style="background:var(--paper-2);color:var(--ink)">#</div>
+        <div>
+          <div class="eyebrow"><span class="sig"></span>TAG / {tag.toUpperCase()}</div>
+          <h1>#{tag}</h1>
+          <p class="lede">タグ「{tag}」が付いた記事の一覧。</p>
+          <div class="ct">公開記事 {posts.length} 本</div>
+        </div>
+      </div>
+    </header>
+  </section>
+
+  <section class="wrap">
+    <div class="list-grid">
+      {posts.map((p) => {
+        const tok = CAT_TOKENS[p.data.category] ?? { label: 'P', c: '#11161C', cBg: '#DCD7C5' };
+        const src = sourceOf(p);
+        return (
+          <a class="post" href={`/posts/${p.id}/`} style={`--c-bg:${tok.cBg};--c-fg:${tok.c}`}>
+            <div class="post-slug">
+              <div class="icon">{tok.label}</div>
+              <div class="id">{idOf(p)}</div>
+            </div>
+            <div class="post-body">
+              <div class="post-meta">
+                <span class="cat-pill">{CATEGORIES[p.data.category].name}</span>
+                <span>·</span>
+                <span>{fmtDate(p.data.pubDate)}</span>
+                <span style="flex:1"></span>
+                <span class={'ai-mark' + (src === 'real' ? ' is-real' : '')}>
+                  {src === 'real' ? '◆ 実体験' : '◇ AIまとめ'}
+                </span>
+              </div>
+              <h4>{p.data.title}</h4>
+              <p class="desc">{p.data.description}</p>
+            </div>
+          </a>
+        );
+      })}
     </div>
-  </div>
-</BaseLayout>
+  </section>
+</LabLayout>
