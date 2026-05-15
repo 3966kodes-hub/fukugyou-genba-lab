@@ -21,6 +21,7 @@ MDX / MD ファイル内の外部リンク・内部リンクを抽出し、HTTP 
 import os
 import re
 import sys
+import time
 import urllib.request
 import urllib.error
 from pathlib import Path
@@ -68,28 +69,53 @@ def extract_links(text: str):
     return sorted(found)
 
 
-def check_external(url: str):
-    """外部 URL を HEAD で叩く。失敗時は GET にフォールバック。"""
+def _try_request(url: str, method: str):
     req = urllib.request.Request(
-        url, method="HEAD", headers={"User-Agent": USER_AGENT}
+        url, method=method, headers={"User-Agent": USER_AGENT}
     )
-    try:
-        with urllib.request.urlopen(req, timeout=TIMEOUT) as res:
-            return res.status, "HEAD"
-    except urllib.error.HTTPError as e:
-        if e.code in (403, 405, 501):
-            # bot 弾き / HEAD 非対応 → GET でリトライ
-            try:
-                req2 = urllib.request.Request(
-                    url, method="GET", headers={"User-Agent": USER_AGENT}
-                )
-                with urllib.request.urlopen(req2, timeout=TIMEOUT) as res2:
-                    return res2.status, "GET"
-            except Exception as e2:
-                return f"ERR:{type(e2).__name__}", "GET"
-        return e.code, "HEAD"
-    except Exception as e:
-        return f"ERR:{type(e).__name__}", "HEAD"
+    with urllib.request.urlopen(req, timeout=TIMEOUT) as res:
+        return res.status
+
+
+def check_external(url: str):
+    """外部 URL を HEAD で叩く。失敗時は GET にフォールバック。
+    並列実行で bot 保護に当たることがあるため、エラー時はバックオフ付きで最大 2 回リトライする。
+    """
+    last_err = None
+    last_method = "HEAD"
+    for attempt in range(3):
+        if attempt > 0:
+            time.sleep(2 * attempt)  # 2s, 4s のバックオフ
+        try:
+            status = _try_request(url, "HEAD")
+            return status, "HEAD"
+        except urllib.error.HTTPError as e:
+            last_err = e
+            last_method = "HEAD"
+            if e.code in (403, 405, 501, 429, 503):
+                # bot 弾き / HEAD 非対応 / レート制限 → GET でリトライ
+                try:
+                    status = _try_request(url, "GET")
+                    return status, "GET"
+                except urllib.error.HTTPError as e2:
+                    last_err = e2
+                    last_method = "GET"
+                    if e2.code in (429, 503):
+                        continue  # バックオフリトライへ
+                    return e2.code, "GET"
+                except Exception as e2:
+                    last_err = e2
+                    last_method = "GET"
+                    continue  # バックオフリトライへ
+            return e.code, "HEAD"
+        except Exception as e:
+            last_err = e
+            last_method = "HEAD"
+            continue  # バックオフリトライへ
+    # 全リトライ失敗
+    if isinstance(last_err, urllib.error.HTTPError):
+        return last_err.code, last_method
+    return f"ERR:{type(last_err).__name__}", last_method
 
 
 def check_internal(path: str):
