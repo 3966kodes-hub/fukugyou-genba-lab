@@ -773,8 +773,8 @@ body.lab .art-meta .author .av {
 
 body.lab .art-body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px;
-  gap: 56px;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 40px;
   padding-bottom: 48px;
 }
 @media (max-width: 980px) {
@@ -839,7 +839,7 @@ body.lab .art-main {
   font-size: 15.5px;
   line-height: 1.95;
   color: var(--ink-2);
-  max-width: 68ch;
+  max-width: none;
   counter-reset: section;
 }
 body.lab .art-main p { margin: 0 0 1.4em; text-wrap: pretty; }
